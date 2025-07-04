@@ -9,7 +9,8 @@ export interface ChesserConfig extends ChesserSettings {
   shapes?: any;
   currentMoveIdx?: number;
   moves?: string[];
-  width?: string;
+  width?: number;
+  hideMenu?: boolean;
 }
 
 const ORIENTATIONS = ["white", "black"];

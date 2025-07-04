@@ -25,6 +25,7 @@ insert FEN here
 | `viewOnly`    | `true`/`false`                                               | If enabled, displays a static chess board (no moves, annotations, ...). |
 | `free`        | `true`/`false`                                               | If enabled, disables the chess logic, all moves are valid.   |
 | `width`       | A number (e.g., `500`)                                        | Sets the width of the chess board in pixels.                 |
+| `hideMenu`    | `true`/`false`                                               | If enabled, hides the side menu for this specific board.     |
 
 You can permanently set some settings in [Chesser](https://github.com/SilentVoid13/Chesser)'s obsidian plugin settings.
 

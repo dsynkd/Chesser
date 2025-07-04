@@ -1,24 +1,18 @@
-# Chesser
+# obsidian-chess
 
 A chess game viewer/editor for [Obsidian](https://obsidian.md/).
 
-## Demonstration
-
-![chesser_demo](https://raw.githubusercontent.com/SilentVoid13/Chesser/master/imgs/chesser_demo.gif)
-
 ## Usage
 
-To use [Chesser](https://github.com/SilentVoid13/Chesser), you first need to declare a `chess` code block like so:
+Declare a `chess` code block like so:
 
-![chesser_block](imgs/chesser_block.png)
-
-This will create a basic chess board in the start position.
-
-You can declare various settings **inside** the `chess` code block, like a [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation) string to describe a particular board position. You can find the full settings list below.
+````
+```chess
+insert FEN here
+```
+````
 
 ## Settings
-
-Here are the available settings for a `chesr` code block:
 
 | Name          | Possible Values                                              | Description                                                  |
 | ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -30,6 +24,7 @@ Here are the available settings for a `chesr` code block:
 | `drawable`    | `true`/`false`                                               | Controls the ability to draw annotations (arrows, circles) on the board. |
 | `viewOnly`    | `true`/`false`                                               | If enabled, displays a static chess board (no moves, annotations, ...). |
 | `free`        | `true`/`false`                                               | If enabled, disables the chess logic, all moves are valid.   |
+| `width`       | A number (e.g., `500`)                                        | Sets the width of the chess board in pixels.                 |
 
 You can permanently set some settings in [Chesser](https://github.com/SilentVoid13/Chesser)'s obsidian plugin settings.
 
@@ -56,10 +51,6 @@ You can permanently set some settings in [Chesser](https://github.com/SilentVoid
 After disabling Safe Mode, you can find third-party plugins in Settings > Community plugins > Browse > Search for "Chesser".
 
 After installing, you can then find the installed plugins under Settings > Community plugins. They need to be enabled in order to take effect. You can also uninstall them there.
-
-## Alternatives
-
-- [THeK3nger/obsidian-chessboard](https://github.com/THeK3nger/obsidian-chessboard)
 
 ## Contributing
 

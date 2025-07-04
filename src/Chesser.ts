@@ -171,7 +171,13 @@ export class Chesser extends MarkdownRenderChild {
       });
     }
 
-    this.menu = new ChesserMenu(containerEl, this);
+    // Only create menu if hideSideMenu is not enabled
+    if (!config.hideSideMenu) {
+      this.menu = new ChesserMenu(containerEl, this);
+    } else {
+      // Add CSS class when menu is hidden
+      containerEl.addClass("chesser-no-menu");
+    }
   }
 
   private set_style(el: HTMLElement, pieceStyle: string, boardStyle: string) {
@@ -256,7 +262,9 @@ export class Chesser extends MarkdownRenderChild {
       },
     });
 
-    this.menu?.redrawMoveList();
+    if (this.menu) {
+      this.menu.redrawMoveList();
+    }
     if (shouldSave) {
       this.save_move();
     }

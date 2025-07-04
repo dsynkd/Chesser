@@ -10,6 +10,7 @@ export interface ChesserSettings {
   free: boolean;
   pieceStyle: string;
   boardStyle: string;
+  hideSideMenu: boolean;
 }
 
 export const DEFAULT_SETTINGS: ChesserSettings = {
@@ -19,6 +20,7 @@ export const DEFAULT_SETTINGS: ChesserSettings = {
   free: false,
   pieceStyle: "cburnett",
   boardStyle: "brown",
+  hideSideMenu: false,
 };
 
 export class ChesserSettingTab extends PluginSettingTab {
@@ -33,8 +35,6 @@ export class ChesserSettingTab extends PluginSettingTab {
     let { containerEl } = this;
 
     containerEl.empty();
-
-    containerEl.createEl("h2", { text: "Obsidian Chess Settings" });
 
     new Setting(containerEl)
       .setName("Piece Style")
@@ -103,6 +103,16 @@ export class ChesserSettingTab extends PluginSettingTab {
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.free).onChange((free) => {
           this.plugin.settings.free = free;
+          this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName("Hide Side Menu")
+      .setDesc("If enabled, hides the side menu.")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.hideSideMenu).onChange((hideSideMenu) => {
+          this.plugin.settings.hideSideMenu = hideSideMenu;
           this.plugin.saveSettings();
         });
       });

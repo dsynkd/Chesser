@@ -144,7 +144,15 @@ export class Chesser extends MarkdownRenderChild {
 
     if (config.pgn) {
       console.debug("loading from pgn", config.pgn);
-      this.chess.loadPgn(config.pgn);
+      try {
+        this.chess.loadPgn(config.pgn);
+      } catch (e) {
+        console.warn(e);
+        new Notice(`[Chesser] ${e.message}`);
+        const errorEl = containerEl.createDiv("chesser-error");
+        errorEl.textContent = `${e.message}`;
+        return;
+      }
     } else if (config.fen) {
       console.debug("loading from fen", config.fen);
       this.chess.load(config.fen);

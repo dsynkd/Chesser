@@ -59,10 +59,27 @@ import "../assets/board-css/green.css";
 import "../assets/board-css/purple.css";
 import "../assets/board-css/ic.css";
 
-export function draw_chessboard(app: App, settings: ChesserSettings) {
+export function draw_chessboard_fen(app: App, settings: ChesserSettings) {
   return (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
     let user_config = parse_user_config(settings, source);
-    ctx.addChild(new Chesser(el, ctx, user_config, app));
+    ctx.addChild(new Chesser(el, ctx, user_config, app, false));
+  };
+}
+
+export function draw_chessboard_pgn(app: App, settings: ChesserSettings) {
+  return (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+    // Parse the PGN content from the codeblock
+    const pgn = source.trim();
+    
+    // Create a config with the PGN content
+    let user_config: ChesserConfig = {
+      ...settings,
+      fen: "",
+      pgn: pgn,
+    };
+    
+    // Create a special Chesser instance for PGN that doesn't persist state
+    ctx.addChild(new Chesser(el, ctx, user_config, app, true)); // true = isPgnCodeblock
   };
 }
 
@@ -90,6 +107,7 @@ export class Chesser extends MarkdownRenderChild {
 
   private menu: ChesserMenu;
   private moves: Move[];
+  private isPgnCodeblock: boolean;
 
   public currentMoveIdx: number;
 
@@ -97,7 +115,8 @@ export class Chesser extends MarkdownRenderChild {
     containerEl: HTMLElement,
     ctx: MarkdownPostProcessorContext,
     user_config: ChesserConfig,
-    app: App
+    app: App,
+    isPgnCodeblock: boolean = false
   ) {
     super(containerEl);
 
@@ -105,6 +124,7 @@ export class Chesser extends MarkdownRenderChild {
     this.ctx = ctx;
     this.id = user_config.id ?? nanoid(8);
     this.chess = new Chess();
+    this.isPgnCodeblock = isPgnCodeblock;
 
     const saved_config = read_state(this.id);
     const config = Object.assign({}, user_config, saved_config);
@@ -113,8 +133,8 @@ export class Chesser extends MarkdownRenderChild {
     this.save_move = this.save_move.bind(this);
     this.save_shapes = this.save_shapes.bind(this);
 
-    // Save `id` into the codeblock yaml
-    if (user_config.id === undefined) {
+    // Save `id` into the codeblock yaml (only for regular chess codeblocks, not PGN)
+    if (user_config.id === undefined && !isPgnCodeblock) {
       this.app.workspace.onLayoutReady(() => {
         window.setTimeout(() => {
           this.write_config({ id: this.id });
@@ -246,6 +266,9 @@ export class Chesser extends MarkdownRenderChild {
   }
 
   private save_move() {
+    // Don't save state for PGN codeblocks
+    if (this.isPgnCodeblock) return;
+    
     const config = read_state(this.id);
     write_state(this.id, {
       ...config,
@@ -256,6 +279,9 @@ export class Chesser extends MarkdownRenderChild {
   }
 
   private save_shapes(shapes: DrawShape[]) {
+    // Don't save shapes for PGN codeblocks
+    if (this.isPgnCodeblock) return;
+    
     const config = read_state(this.id);
     write_state(this.id, {
       ...config,

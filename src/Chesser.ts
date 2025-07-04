@@ -59,27 +59,20 @@ import "../assets/board-css/green.css";
 import "../assets/board-css/purple.css";
 import "../assets/board-css/ic.css";
 
-export function draw_chessboard_fen(app: App, settings: ChesserSettings) {
+export function draw_chessboard(app: App, settings: ChesserSettings) {
   return (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-    let user_config = parse_user_config(settings, source);
-    ctx.addChild(new Chesser(el, ctx, user_config, app, false));
-  };
-}
-
-export function draw_chessboard_pgn(app: App, settings: ChesserSettings) {
-  return (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-    // Parse the PGN content from the codeblock
-    const pgn = source.trim();
-    
-    // Create a config with the PGN content
-    let user_config: ChesserConfig = {
-      ...settings,
-      fen: "",
-      pgn: pgn,
-    };
-    
-    // Create a special Chesser instance for PGN that doesn't persist state
-    ctx.addChild(new Chesser(el, ctx, user_config, app, true)); // true = isPgnCodeblock
+    // Detect raw PGN codeblock
+    let user_config: ChesserConfig;
+    if (source[0] == "1") {
+      user_config = {
+        ...settings,
+        fen: "",
+        pgn: source.trim(),
+      }; 
+    } else {
+      user_config = parse_user_config(settings, source);
+    }
+    ctx.addChild(new Chesser(el, ctx, user_config, app));
   };
 }
 
@@ -107,7 +100,7 @@ export class Chesser extends MarkdownRenderChild {
 
   private menu: ChesserMenu;
   private moves: Move[];
-  private isPgnCodeblock: boolean;
+  private user_config: ChesserConfig;
 
   public currentMoveIdx: number;
 
@@ -115,16 +108,15 @@ export class Chesser extends MarkdownRenderChild {
     containerEl: HTMLElement,
     ctx: MarkdownPostProcessorContext,
     user_config: ChesserConfig,
-    app: App,
-    isPgnCodeblock: boolean = false
+    app: App
   ) {
     super(containerEl);
 
     this.app = app;
     this.ctx = ctx;
-    this.id = user_config.id ?? nanoid(8);
     this.chess = new Chess();
-    this.isPgnCodeblock = isPgnCodeblock;
+    this.user_config = user_config;
+    this.id = user_config.id ?? nanoid(8);
 
     const saved_config = read_state(this.id);
     const config = Object.assign({}, user_config, saved_config);
@@ -133,12 +125,9 @@ export class Chesser extends MarkdownRenderChild {
     this.save_move = this.save_move.bind(this);
     this.save_shapes = this.save_shapes.bind(this);
 
-    // Save `id` into the codeblock yaml (only for regular chess codeblocks, not PGN)
-    if (user_config.id === undefined && !isPgnCodeblock) {
-      this.app.workspace.onLayoutReady(() => {
-        window.setTimeout(() => {
-          this.write_config({ id: this.id });
-        }, 0);
+    if (user_config.statePersistence && user_config.id === undefined) {
+      this.app.workspace.onLayoutReady(async () => {
+        await this.write_config({ id: this.id });
       });
     }
 
@@ -242,7 +231,11 @@ export class Chesser extends MarkdownRenderChild {
 
   private get_config(view: MarkdownView): ChesserConfig | undefined {
     const [from, to] = this.get_section_range();
-    const codeblockText = view.editor.getRange(from, to);
+    var codeblockText = view.editor.getRange(from, to);
+    // Detect PGN codeblock
+    if (codeblockText[0] == "1") {
+      codeblockText = "pgn: |\n" + codeblockText.replace(/^/, "  ");
+    }
     try {
       return parseYaml(codeblockText);
     } catch (e) {
@@ -253,7 +246,8 @@ export class Chesser extends MarkdownRenderChild {
     return undefined;
   }
 
-  private write_config(config: Partial<ChesserConfig>) {
+  private async write_config(config: Partial<ChesserConfig>) {
+
     console.debug("writing config to localStorage", config);
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!view) {
@@ -275,8 +269,8 @@ export class Chesser extends MarkdownRenderChild {
   }
 
   private save_move() {
-    // Don't save state for PGN codeblocks
-    if (this.isPgnCodeblock) return;
+    // Don't save if state persistence is disabled
+    if (!this.user_config.statePersistence) return;
     
     const config = read_state(this.id);
     write_state(this.id, {
@@ -288,8 +282,8 @@ export class Chesser extends MarkdownRenderChild {
   }
 
   private save_shapes(shapes: DrawShape[]) {
-    // Don't save shapes for PGN codeblocks
-    if (this.isPgnCodeblock) return;
+    // Don't save if state persistence is disabled
+    if (!this.user_config.statePersistence) return;
     
     const config = read_state(this.id);
     write_state(this.id, {

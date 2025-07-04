@@ -11,6 +11,7 @@ export interface ChesserSettings {
   pieceStyle: string;
   boardStyle: string;
   hideSideMenu: boolean;
+  statePersistence: boolean;
 }
 
 export const DEFAULT_SETTINGS: ChesserSettings = {
@@ -21,6 +22,7 @@ export const DEFAULT_SETTINGS: ChesserSettings = {
   pieceStyle: "cburnett",
   boardStyle: "brown",
   hideSideMenu: false,
+  statePersistence: true,
 };
 
 export class ChesserSettingTab extends PluginSettingTab {
@@ -113,6 +115,16 @@ export class ChesserSettingTab extends PluginSettingTab {
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.hideSideMenu).onChange((hideSideMenu) => {
           this.plugin.settings.hideSideMenu = hideSideMenu;
+          this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName("State Persistence")
+      .setDesc("If enabled, chess boards will remember their state (moves, annotations) across sessions.")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.statePersistence).onChange((statePersistence) => {
+          this.plugin.settings.statePersistence = statePersistence;
           this.plugin.saveSettings();
         });
       });

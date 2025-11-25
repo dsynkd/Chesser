@@ -12,6 +12,7 @@ export interface ChesserSettings {
   boardStyle: string;
   hideSideMenu: boolean;
   statePersistence: boolean;
+  boardWidth: string;
 }
 
 export const DEFAULT_SETTINGS: ChesserSettings = {
@@ -23,6 +24,7 @@ export const DEFAULT_SETTINGS: ChesserSettings = {
   boardStyle: "brown",
   hideSideMenu: false,
   statePersistence: true,
+  boardWidth: "400px",
 };
 
 export class ChesserSettingTab extends PluginSettingTab {
@@ -64,6 +66,19 @@ export class ChesserSettingTab extends PluginSettingTab {
           this.plugin.settings.boardStyle = boardStyle;
           this.plugin.saveSettings();
         });
+      });
+
+    new Setting(containerEl)
+      .setName("Board Width")
+      .setDesc("Sets the default width of chess boards (e.g., '400px', '50%', '30em').")
+      .addText((text) => {
+        text.setValue(this.plugin.settings.boardWidth)
+          .onChange((value) => {
+            if (value.trim()) {
+              this.plugin.settings.boardWidth = value.trim();
+              this.plugin.saveSettings();
+            }
+          });
       });
 
     new Setting(containerEl)

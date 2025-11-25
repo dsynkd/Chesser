@@ -9,7 +9,7 @@ export interface ChesserConfig extends ChesserSettings {
   shapes?: any;
   currentMoveIdx?: number;
   moves?: string[];
-  width?: number;
+  width?: string;
   hideMenu?: boolean;
 }
 

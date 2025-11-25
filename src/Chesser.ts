@@ -175,10 +175,8 @@ export class Chesser extends MarkdownRenderChild {
       return;
     }
 
-    // Apply custom width if specified
-    if (config.width) {
-      this.apply_custom_width(config.width);
-    }
+    // Apply width (custom or default)
+    this.apply_custom_width(config.width);
 
     // Activates the chess logic
     this.setFreeMove(config.free);
@@ -207,10 +205,12 @@ export class Chesser extends MarkdownRenderChild {
     el.addClasses([pieceStyle, `${boardStyle}-board`, "chesser-container"]);
   }
 
-  private apply_custom_width(width: number) {
+  private apply_custom_width(width?: string) {
     const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
     if (boardEl) {
-      boardEl.style.maxWidth = `${width}`;
+      // Use provided width, or fall back to default from settings
+      const finalWidth = width ?? this.user_config.boardWidth;
+      boardEl.style.maxWidth = finalWidth;
     }
   }
 

@@ -5,8 +5,8 @@ import startingPositons from "./startingPositions";
 export default class ChesserMenu {
   private chesser: Chesser;
   private containerEl: HTMLElement;
-
   private movesListEl: HTMLElement;
+  private hideMenuButton: HTMLAnchorElement;
 
   constructor(parentEl: HTMLElement, chesser: Chesser) {
     this.chesser = chesser;
@@ -127,17 +127,17 @@ export default class ChesserMenu {
       });
     });
 
-    btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
-      btn.ariaLabel = "Copy FEN";
-      setIcon(btn, "two-blank-pages");
+    this.hideMenuButton = btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
+      btn.ariaLabel = "Hide Menu";
+      setIcon(btn, "menu");
       btn.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
-        navigator.clipboard.writeText(this.chesser.getFen());
+        this.chesser.toggleMenuVisibility();
       });
-    });
+    }) as HTMLAnchorElement;
   }
 
-  redrawMoveList() {
+  public redrawMoveList() {
     this.movesListEl.empty();
     this.movesListEl.createDiv({
       text: this.chesser.turn() === "b" ? "Black's turn" : "White's turn",

@@ -8,21 +8,35 @@
   align-items: flex-start;
   height: 400px;
   width: 100%;
+  position: relative;
 }
 
 /* When menu is hidden, allow container to adjust height based on board */
-.chesser-container.chesser-no-menu {
+.chesser-container.no-menu {
   height: auto;
   min-height: 400px;
 }
 
 /* When menu is hidden, make the chess board take full width and maintain square aspect ratio */
-.chesser-container.chesser-no-menu .cg-wrap {
+.chesser-container.no-menu .cg-wrap {
   width: 100%;
   max-width: 600px;
   height: auto;
   aspect-ratio: 1 / 1;
   margin: 0 auto;
+}
+
+/* Menu hide/show animations */
+.chess-menu-container {
+  transition: opacity 0.3s ease, transform 0.3s ease, width 0.3s ease, margin 0.3s ease;
+}
+
+.chess-menu-container.hide-menu {
+  opacity: 0;
+  transform: translateX(-10px);
+  width: 0 !important;
+  margin-left: 0 !important;
+  overflow: hidden;
 }
 
 .chess-menu-container {

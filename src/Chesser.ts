@@ -199,8 +199,7 @@ export class Chesser extends MarkdownRenderChild {
     if (!shouldHideMenu) {
       this.menu = new ChesserMenu(containerEl, this);
     } else {
-      // Add CSS class when menu is hidden
-      containerEl.addClass("chesser-no-menu");
+      containerEl.addClass("no-menu");
     }
   }
 
@@ -456,5 +455,33 @@ export class Chesser extends MarkdownRenderChild {
 
     this.cg.set({ fen: this.chess.fen(), lastMove });
     this.sync_board_with_gamestate();
+  }
+
+  public toggleMenuVisibility(): void {
+    const menuContainer = this.containerEl.querySelector('.chess-menu-container') as HTMLElement;
+    menuContainer.classList.add('hide-menu');
+    this.containerEl.addClass('no-menu');
+  }
+
+  private createShowMenuButton(): void {
+    // Remove existing button if any
+    this.removeShowMenuButton();
+    
+    const boardWrap = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
+    if (!boardWrap) return;
+    
+    const showButton = this.containerEl.createDiv('chess-show-menu-button');
+    showButton.setAttribute('aria-label', 'Show Menu');
+    showButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+    showButton.addEventListener('click', () => {
+      this.toggleMenuVisibility();
+    });
+  }
+
+  private removeShowMenuButton(): void {
+    const existingButton = this.containerEl.querySelector('.chess-show-menu-button');
+    if (existingButton) {
+      existingButton.remove();
+    }
   }
 }

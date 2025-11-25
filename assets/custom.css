@@ -1,7 +1,27 @@
-.cg-wrap {
+div.cg-wrap {
   width: 400px;
   height: 400px;
+  
+  & coords.files {
+    bottom: -2px;
+    left: 5%;
+  }
+
+  & coords.ranks {
+    top: -5%;
+  }
+
+  /* Hide coordinates by default */
+  & coords {
+    opacity: 0 !important;
+  }
+
+  /* Show coordinates when grid labels are enabled */
+  &.chesser-show-coords coords {
+    opacity: 1 !important;
+  }
 }
+
 
 .chesser-container {
   display: flex;
@@ -59,16 +79,6 @@
 .chess-turn-text {
   font-weight: 500;
   margin: 8px 0;
-}
-
-/* Hide coordinates by default */
-.cg-wrap coords {
-  opacity: 0 !important;
-}
-
-/* Show coordinates when grid labels are enabled */
-.cg-wrap.chesser-show-coords coords {
-  opacity: 1 !important;
 }
 
 .chess-move-list {

@@ -194,7 +194,7 @@ export class Chesser extends MarkdownRenderChild {
       });
     }
 
-    const shouldHideMenu = config.hideMenu !== undefined ? config.hideMenu : config.hideSideMenu;
+    const shouldHideMenu = config.hideMenu !== undefined ? config.hideMenu : !config.enableSideMenu;
     
     if (!shouldHideMenu) {
       this.menu = new ChesserMenu(containerEl, this);

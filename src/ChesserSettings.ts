@@ -10,7 +10,7 @@ export interface ChesserSettings {
   free: boolean;
   pieceStyle: string;
   boardStyle: string;
-  hideSideMenu: boolean;
+  enableSideMenu: boolean;
   statePersistence: boolean;
   boardWidth: string;
   enableCoordinates: boolean;
@@ -23,10 +23,10 @@ export const DEFAULT_SETTINGS: ChesserSettings = {
   free: false,
   pieceStyle: "cburnett",
   boardStyle: "brown",
-  hideSideMenu: false,
+  enableSideMenu: true,
   statePersistence: true,
   boardWidth: "400px",
-  enableCoordinates: false,
+  enableCoordinates: true,
 };
 
 export class ChesserSettingTab extends PluginSettingTab {
@@ -41,6 +41,19 @@ export class ChesserSettingTab extends PluginSettingTab {
     let { containerEl } = this;
 
     containerEl.empty();
+
+    new Setting(containerEl)
+      .setName("State Persistence")
+      .setDesc("If enabled, chess boards will remember their state (moves, annotations) across sessions.")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.statePersistence).onChange((statePersistence) => {
+          this.plugin.settings.statePersistence = statePersistence;
+          this.plugin.saveSettings();
+        });
+      });
+
+    // Chessboard Section
+    containerEl.createEl('h2', { text: 'Chessboard' });
 
     new Setting(containerEl)
       .setName("Piece Style")
@@ -97,6 +110,16 @@ export class ChesserSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
+      .setName("Show Coordinates")
+      .setDesc("Displays rank (1-8) and file (a-h) labels on the chessboard.")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.enableCoordinates).onChange((enableCoordinates) => {
+          this.plugin.settings.enableCoordinates = enableCoordinates;
+          this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
       .setName("Drawable")
       .setDesc("Controls the ability to draw annotations (arrows, circles) on the board.")
       .addToggle((toggle) => {
@@ -126,32 +149,15 @@ export class ChesserSettingTab extends PluginSettingTab {
         });
       });
 
-    new Setting(containerEl)
-      .setName("Hide Side Menu")
-      .setDesc("If enabled, hides the side menu.")
-      .addToggle((toggle) => {
-        toggle.setValue(this.plugin.settings.hideSideMenu).onChange((hideSideMenu) => {
-          this.plugin.settings.hideSideMenu = hideSideMenu;
-          this.plugin.saveSettings();
-        });
-      });
+    // Side Menu Section
+    containerEl.createEl('h2', { text: 'Side Menu' });
 
     new Setting(containerEl)
-      .setName("State Persistence")
-      .setDesc("If enabled, chess boards will remember their state (moves, annotations) across sessions.")
+      .setName("Enable Side Menu")
+      .setDesc("Shows the side menu with move history and controls.")
       .addToggle((toggle) => {
-        toggle.setValue(this.plugin.settings.statePersistence).onChange((statePersistence) => {
-          this.plugin.settings.statePersistence = statePersistence;
-          this.plugin.saveSettings();
-        });
-      });
-
-    new Setting(containerEl)
-      .setName("Show Chessboard Coordinates")
-      .setDesc("If enabled, displays rank (1-8) and file (a-h) labels on the chessboard.")
-      .addToggle((toggle) => {
-        toggle.setValue(this.plugin.settings.enableCoordinates).onChange((enableCoordinates) => {
-          this.plugin.settings.enableCoordinates = enableCoordinates;
+        toggle.setValue(this.plugin.settings.enableSideMenu).onChange((enableSideMenu) => {
+          this.plugin.settings.enableSideMenu = enableSideMenu;
           this.plugin.saveSettings();
         });
       });

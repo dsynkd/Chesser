@@ -175,6 +175,9 @@ export class Chesser extends MarkdownRenderChild {
       return;
     }
 
+    // Apply grid labels visibility
+    this.apply_coordinates(config.enableCoordinates);
+
     // Apply width (custom or default)
     this.apply_custom_width(config.width);
 
@@ -211,6 +214,15 @@ export class Chesser extends MarkdownRenderChild {
       // Use provided width, or fall back to default from settings
       const finalWidth = width ?? this.user_config.boardWidth;
       boardEl.style.maxWidth = finalWidth;
+    }
+  }
+
+  private apply_coordinates(enableCoordinates?: boolean) {
+    const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
+    if (enableCoordinates === true) {
+      boardEl?.addClass('chesser-show-coords');
+    } else {
+      boardEl?.removeClass('chesser-show-coords');
     }
   }
 

@@ -13,6 +13,7 @@ export interface ChesserSettings {
   hideSideMenu: boolean;
   statePersistence: boolean;
   boardWidth: string;
+  enableCoordinates: boolean;
 }
 
 export const DEFAULT_SETTINGS: ChesserSettings = {
@@ -25,6 +26,7 @@ export const DEFAULT_SETTINGS: ChesserSettings = {
   hideSideMenu: false,
   statePersistence: true,
   boardWidth: "400px",
+  enableCoordinates: false,
 };
 
 export class ChesserSettingTab extends PluginSettingTab {
@@ -140,6 +142,16 @@ export class ChesserSettingTab extends PluginSettingTab {
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.settings.statePersistence).onChange((statePersistence) => {
           this.plugin.settings.statePersistence = statePersistence;
+          this.plugin.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName("Show Chessboard Coordinates")
+      .setDesc("If enabled, displays rank (1-8) and file (a-h) labels on the chessboard.")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.settings.enableCoordinates).onChange((enableCoordinates) => {
+          this.plugin.settings.enableCoordinates = enableCoordinates;
           this.plugin.saveSettings();
         });
       });

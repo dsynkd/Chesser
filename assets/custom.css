@@ -47,9 +47,14 @@
   margin: 8px 0;
 }
 
-/* temporary */
+/* Hide coordinates by default */
 .cg-wrap coords {
   opacity: 0 !important;
+}
+
+/* Show coordinates when grid labels are enabled */
+.cg-wrap.chesser-show-coords coords {
+  opacity: 1 !important;
 }
 
 .chess-move-list {

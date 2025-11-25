@@ -37,6 +37,9 @@
   border-top: 1px solid var(--background-modifier-border);
   margin-top: auto;
   padding-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
 }
 
 .chess-turn-text {

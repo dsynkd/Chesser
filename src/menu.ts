@@ -88,25 +88,6 @@ export default class ChesserMenu {
 
   createToolbar() {
     const btnContainer = this.containerEl.createDiv("chess-toolbar-container");
-    btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
-      btn.ariaLabel = "Flip board";
-      setIcon(btn, "switch");
-      btn.addEventListener("click", (e: MouseEvent) => {
-        e.preventDefault();
-        this.chesser.flipBoard();
-      });
-    });
-
-    btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
-      btn.ariaLabel = "Reset";
-      setIcon(btn, "restore-file-glyph");
-      btn.addEventListener("click", (e: MouseEvent) => {
-        e.preventDefault();
-        while (this.chesser.currentMoveIdx >= 0) {
-          this.chesser.undo_move();
-        }
-      });
-    });
 
     btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
       btn.ariaLabel = "Undo";
@@ -123,6 +104,26 @@ export default class ChesserMenu {
       btn.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
         this.chesser.redo_move();
+      });
+    });
+
+    btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
+      btn.ariaLabel = "Reset";
+      setIcon(btn, "restore-file-glyph");
+      btn.addEventListener("click", (e: MouseEvent) => {
+        e.preventDefault();
+        while (this.chesser.currentMoveIdx >= 0) {
+          this.chesser.undo_move();
+        }
+      });
+    });
+
+    btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
+      btn.ariaLabel = "Flip board";
+      setIcon(btn, "switch");
+      btn.addEventListener("click", (e: MouseEvent) => {
+        e.preventDefault();
+        this.chesser.flipBoard();
       });
     });
 

@@ -1,6 +1,19 @@
+.chesser-container {
+  display: flex;
+  align-items: stretch;
+  min-height: 400px;
+  min-width: 400px;
+  width: 100%;
+  position: relative;
+  --sidemenu-min-width: 150px;
+}
+
 div.cg-wrap {
   width: 400px;
-  height: 400px;
+  min-width: 400px;
+  max-width: calc(var(--file-line-width) - var(--sidemenu-min-width, 150px) - 13px);
+  aspect-ratio: 1 / 1;
+  align-self: flex-start;
   
   & coords.files {
     bottom: -2px;
@@ -22,28 +35,31 @@ div.cg-wrap {
   }
 }
 
+/* Resize handle - right border of board */
+.cg-wrap.chess-resizable {
+  border-right: 3px solid transparent;
+  transition: border-color 0.2s ease;
+  user-select: none;
+  padding-right: 3px;
+  box-sizing: border-box;
+}
 
-.chesser-container {
-  display: flex;
-  align-items: flex-start;
-  height: 400px;
-  width: 100%;
-  position: relative;
+.cg-wrap.chess-resizable:hover {
+  cursor: ew-resize;
 }
 
 /* When menu is hidden, allow container to adjust height based on board */
 .chesser-container.no-menu {
   height: auto;
-  min-height: 400px;
 }
 
 /* When menu is hidden, make the chess board take full width and maintain square aspect ratio */
 .chesser-container.no-menu .cg-wrap {
-  width: 100%;
-  max-width: 600px;
+  width: 100% !important;
+  max-width: 100% !important;
   height: auto;
-  aspect-ratio: 1 / 1;
   margin: 0 auto;
+  cursor: pointer;
 }
 
 /* Menu hide/show animations */
@@ -62,9 +78,9 @@ div.cg-wrap {
 .chess-menu-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  margin-left: 24px;
-  width: calc(100% - 424px);
+  margin-left: clamp(5px, 1% ,24px);
+  flex: 1;
+  min-width: var(--sidemenu-min-width);
 }
 
 .chess-toolbar-container {

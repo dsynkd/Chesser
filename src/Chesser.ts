@@ -101,6 +101,9 @@ export class Chesser extends MarkdownRenderChild {
   private menu: ChesserMenu;
   private moves: Move[];
   private user_config: ChesserConfig;
+  private isResizing: boolean = false;
+  private resizeStartX: number = 0;
+  private resizeStartWidth: number = 0;
 
   public currentMoveIdx: number;
 
@@ -181,6 +184,9 @@ export class Chesser extends MarkdownRenderChild {
     // Apply width (custom or default)
     this.apply_custom_width(config.width);
 
+    // Add resize handle for mouse resizing
+    this.setupResizeHandle();
+
     // Activates the chess logic
     this.setFreeMove(config.free);
 
@@ -212,8 +218,66 @@ export class Chesser extends MarkdownRenderChild {
     if (boardEl) {
       // Use provided width, or fall back to default from settings
       const finalWidth = width ?? this.user_config.boardWidth;
-      boardEl.style.maxWidth = finalWidth;
+      boardEl.style.width = finalWidth;
     }
+  }
+
+  private setupResizeHandle(): void {
+    const boardWrap = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
+
+    // Add resize class to enable right border as resize handle
+    boardWrap.addClass('chess-resizable');
+    
+    // Detect mousedown on the right edge of the board
+    boardWrap.addEventListener('mousedown', (e: MouseEvent) => {
+      const rect = boardWrap.getBoundingClientRect();
+      const edgeThreshold = 5; // pixels from right edge to trigger resize
+      const isNearRightEdge = e.clientX >= rect.right - edgeThreshold && e.clientX <= rect.right;
+      
+      if (isNearRightEdge) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.startResize(e, boardWrap);
+      }
+    });
+  }
+
+  private startResize(e: MouseEvent, boardEl: HTMLElement): void {
+    this.isResizing = true;
+    this.resizeStartX = e.clientX;
+    this.resizeStartWidth = boardEl.offsetWidth;
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!this.isResizing) return;
+      
+      const deltaX = e.clientX - this.resizeStartX;
+      const newWidth = Math.max(400, Math.min(540, this.resizeStartWidth + deltaX));
+      const widthPx = `${newWidth}px`;
+      
+      boardEl.style.width = widthPx;
+    };
+
+    const onMouseUp = () => {
+      this.isResizing = false;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      
+      this.cg.redrawAll();
+      this.saveBoardWidth(boardEl.style.width);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }
+
+  private saveBoardWidth(width: string): void {
+    if(!this.user_config.statePersistence) { return }
+    
+    const config = read_state(this.id);
+    write_state(this.id, {
+      ...config,
+      width,
+    });
   }
 
   private apply_coordinates(enableCoordinates?: boolean) {
@@ -459,8 +523,14 @@ export class Chesser extends MarkdownRenderChild {
 
   public toggleMenuVisibility(): void {
     const menuContainer = this.containerEl.querySelector('.chess-menu-container') as HTMLElement;
+    const boardWrap = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
+    if (!boardWrap) return;
+    
     menuContainer.classList.add('hide-menu');
     this.containerEl.addClass('no-menu');
+    this.containerEl.style.setProperty('--sidemenu-min-width', '0');
+    boardWrap.style.width = '100%';
+    boardWrap.style.maxWidth = '100%';
   }
 
   private createShowMenuButton(): void {

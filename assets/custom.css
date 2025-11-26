@@ -51,15 +51,15 @@ div.cg-wrap {
 /* When menu is hidden, allow container to adjust height based on board */
 .chesser-container.no-menu {
   height: auto;
+  justify-content: center;
 }
 
-/* When menu is hidden, make the chess board take full width and maintain square aspect ratio */
+/* When menu is hidden, make the chess board centered and maintain square aspect ratio */
 .chesser-container.no-menu .cg-wrap {
-  width: 100% !important;
-  max-width: 100% !important;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   margin: 0 auto;
-  cursor: pointer;
 }
 
 /* Menu hide/show animations */

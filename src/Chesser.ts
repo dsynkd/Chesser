@@ -251,10 +251,18 @@ export class Chesser extends MarkdownRenderChild {
       if (!this.isResizing) return;
       
       const deltaX = e.clientX - this.resizeStartX;
-      const newWidth = Math.max(400, Math.min(540, this.resizeStartWidth + deltaX));
+      const isMenuHidden = this.containerEl.hasClass('no-menu');
+      
+      // Calculate max width based on whether menu is visible
+      const maxWidth = isMenuHidden 
+        ? Math.min(1000, this.containerEl.offsetWidth - 20) // Allow up to container width when menu hidden
+        : 540; // Original max when menu visible
+      
+      const newWidth = Math.max(400, Math.min(maxWidth, this.resizeStartWidth + deltaX));
       const widthPx = `${newWidth}px`;
       
       boardEl.style.width = widthPx;
+      boardEl.style.maxWidth = widthPx; // Override CSS max-width with inline style
     };
 
     const onMouseUp = () => {
@@ -524,13 +532,10 @@ export class Chesser extends MarkdownRenderChild {
   public toggleMenuVisibility(): void {
     const menuContainer = this.containerEl.querySelector('.chess-menu-container') as HTMLElement;
     const boardWrap = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
-    if (!boardWrap) return;
-    
     menuContainer.classList.add('hide-menu');
     this.containerEl.addClass('no-menu');
-    this.containerEl.style.setProperty('--sidemenu-min-width', '0');
     boardWrap.style.width = '100%';
-    boardWrap.style.maxWidth = '100%';
+    boardWrap.style.maxWidth = '';
   }
 
   private createShowMenuButton(): void {

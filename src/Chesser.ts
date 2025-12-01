@@ -201,10 +201,36 @@ export class Chesser extends MarkdownRenderChild {
 		} else {
 			containerEl.addClass("no-menu");
 		}
+
+		this.setupKeyboardShortcuts();
 	}
 
 	private set_style(el: HTMLElement, pieceStyle: string, boardStyle: string) {
 		el.addClasses([pieceStyle, `${boardStyle}-board`, "chesser-container"]);
+	}
+
+	private setupKeyboardShortcuts() {
+		// Make container focusable so it can receive keyboard events
+		this.containerEl.setAttribute("tabindex", "0");
+		this.containerEl.style.outline = "none"; // Remove focus outline for cleaner look
+
+		this.containerEl.addEventListener("keydown", (e: KeyboardEvent) => {
+			// Check if the container or any of its children are focused/active
+			const activeElement = document.activeElement;
+			const isFocused = activeElement === this.containerEl || 
+			                  this.containerEl.contains(activeElement);
+			
+			if (isFocused && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				if (e.key === "ArrowLeft") {
+					this.undo_move();
+				} else if (e.key === "ArrowRight") {
+					this.redo_move();
+				}
+			}
+		});
 	}
 
 	private apply_initial_board_width(width: string) {

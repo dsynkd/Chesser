@@ -231,6 +231,15 @@ export class Chesser extends MarkdownRenderChild {
 				}
 			}
 		});
+
+		// Focus the container when clicking anywhere within it
+		this.containerEl.addEventListener("click", (e: MouseEvent) => {
+			// Only focus if clicking directly on the container or board, not on interactive elements like buttons
+			const target = e.target as HTMLElement;
+			if (target === this.containerEl || target.closest('.chesser-container')) {
+				this.containerEl.focus();
+			}
+		}, true); // Use capture phase to catch clicks early
 	}
 
 	private apply_initial_board_width(width: string) {

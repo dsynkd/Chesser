@@ -1,167 +1,128 @@
 import { setIcon, Setting } from "obsidian";
 import { Chesser } from "./Chesser";
-import startingPositons from "./startingPositions";
 
 export default class ChesserMenu {
-  private chesser: Chesser;
-  private containerEl: HTMLElement;
-  private movesListEl: HTMLElement;
-  private hideMenuButton: HTMLAnchorElement;
-  private parentEl: HTMLElement;
+	private chesser: Chesser;
+	private menuContainer: HTMLElement;
+	private movesListEl: HTMLElement;
+	private toolbar: HTMLElement;
+	private parentContainer: HTMLElement;
 
-  constructor(parentEl: HTMLElement, chesser: Chesser) {
-    this.chesser = chesser;
-    this.parentEl = parentEl;
+	constructor(parentEl: HTMLElement, chesser: Chesser) {
+		this.chesser = chesser;
+		this.parentContainer = parentEl;
+		this.menuContainer = this.parentContainer.createDiv("chess-menu-container");
+		this.movesListEl = this.menuContainer.createDiv("chess-menu-section");
 
-    this.containerEl = parentEl.createDiv("chess-menu-container", (containerEl) => {
-      containerEl.createDiv({ cls: "chess-menu-section" }, (sectionEl) => {
-        const selectEl = sectionEl.createEl(
-          "select",
-          {
-            cls: "dropdown chess-starting-position-dropdown",
-          },
-          (el) => {
-            el.createEl("option", {
-              value: "starting-position",
-              text: "Starting Position",
-            });
-            el.createEl("option", {
-              value: "custom",
-              text: "Custom",
-            });
-            el.createEl("optgroup", {}, (optgroup) => {
-              optgroup.label = "Popular Openings";
-              startingPositons.forEach((category) => {
-                category.items.forEach((item) => {
-                  optgroup.createEl("option", {
-                    value: item.eco,
-                    text: item.name,
-                  });
-                });
-              });
-            });
+		this.redrawMoveList();
+		this.createToolbar();
+		this.setupResizeObserver();
+	}
 
-            const startingPosition = this.getStartingPositionFromFen(chesser.getFen());
-            const startingPositionName = startingPosition
-              ? startingPosition.eco
-              : "custom";
-            el.value = startingPositionName;
-          }
-        );
+	private createToolbar() {
+		this.toolbar = this.menuContainer.createDiv("chess-toolbar-container");
+		this.createUndoButton();
+		this.createRedoButton();
+		this.createFlipBoardButton();
+		this.createResetButton();
+		this.createHideMenuButton();
+	}
 
-        selectEl.addEventListener("change", (ev) => {
-          const value = (ev.target as any).value;
+	private createUndoButton() {
+		this.toolbar.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
 
-          if (value === "starting-position") {
-            this.chesser.loadFen(
-              "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-              []
-            );
-            return;
-          }
+			btn.ariaLabel = "Undo";
+			setIcon(btn, "left-arrow");
 
-          const startingPosition = startingPositons
-            .flatMap((cat) => cat.items)
-            .find((item) => item.eco === value);
+			btn.addEventListener("click", (e: MouseEvent) => {
+				e.preventDefault();
+				this.chesser.undo_move();
+			});
+		});
+	}
 
-          this.chesser.loadFen(startingPosition.fen, startingPosition.moves);
-        });
+	private createRedoButton() {
+		this.toolbar.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
 
-        new Setting(sectionEl).setName("Enable Free Move?").addToggle((toggle) => {
-          toggle.setValue(this.chesser.getBoardState().movable.free);
-          toggle.onChange((value) => {
-            this.chesser.setFreeMove(value);
-          });
-        });
-      });
-    });
+			btn.ariaLabel = "Redo";
+			setIcon(btn, "right-arrow");
 
-    this.movesListEl = this.containerEl.createDiv({
-      cls: "chess-menu-section chess-menu-section-tall",
-    });
+			btn.addEventListener("click", (e: MouseEvent) => {
+				e.preventDefault();
+				this.chesser.redo_move();
+			});
+		});
+	}
 
-    this.redrawMoveList();
-    this.createToolbar();
-  }
+	private createResetButton() {
+		this.toolbar.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
+			
+			btn.ariaLabel = "Reset";
+			setIcon(btn, "restore-file-glyph");
+			
+			btn.addEventListener("click", (e: MouseEvent) => {
+				e.preventDefault();
+				while (this.chesser.currentMoveIdx >= 0) {
+					this.chesser.undo_move();
+				}
+			});
+		});
+	}
 
-  getStartingPositionFromFen(fen: string) {
-    return startingPositons.flatMap((cat) => cat.items).find((item) => item.eco === fen);
-  }
+	private createFlipBoardButton() {
+		this.toolbar.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
+			
+			btn.ariaLabel = "Flip board";
+			setIcon(btn, "switch");
 
-  createToolbar() {
-    const btnContainer = this.containerEl.createDiv("chess-toolbar-container");
+			btn.addEventListener("click", (e: MouseEvent) => {
+				e.preventDefault();
+				this.chesser.flipBoard();
+			});
+		});
+	}
 
-    btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
-      btn.ariaLabel = "Undo";
-      setIcon(btn, "left-arrow");
-      btn.addEventListener("click", (e: MouseEvent) => {
-        e.preventDefault();
-        this.chesser.undo_move();
-      });
-    });
+	private createHideMenuButton() {
+		this.toolbar.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
 
-    btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
-      btn.ariaLabel = "Redo";
-      setIcon(btn, "right-arrow");
-      btn.addEventListener("click", (e: MouseEvent) => {
-        e.preventDefault();
-        this.chesser.redo_move();
-      });
-    });
+			btn.ariaLabel = "Hide Menu";
+			setIcon(btn, "x");
 
-    btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
-      btn.ariaLabel = "Reset";
-      setIcon(btn, "restore-file-glyph");
-      btn.addEventListener("click", (e: MouseEvent) => {
-        e.preventDefault();
-        while (this.chesser.currentMoveIdx >= 0) {
-          this.chesser.undo_move();
-        }
-      });
-    });
+			btn.addEventListener("click", (e: MouseEvent) => {
+				e.preventDefault();
+				this.parentContainer.addClass('no-menu');
+			});
+		});
+	}
 
-    btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
-      btn.ariaLabel = "Flip board";
-      setIcon(btn, "switch");
-      btn.addEventListener("click", (e: MouseEvent) => {
-        e.preventDefault();
-        this.chesser.flipBoard();
-      });
-    });
+	public redrawMoveList() {
+		this.movesListEl.empty();
+		this.movesListEl.createDiv({
+			text: this.chesser.turn() === "b" ? "Black's turn" : "White's turn",
+			cls: "chess-turn-text",
+		});
+		this.movesListEl.createDiv("chess-move-list", (moveListEl) => {
+			this.chesser.history().forEach((move, idx) => {
+				const moveEl = moveListEl.createDiv({
+					cls: `chess-move ${
+						this.chesser.currentMoveIdx === idx ? "chess-move-active" : ""
+					}`,
+					text: move.san,
+				});
+				moveEl.addEventListener("click", (ev) => {
+					ev.preventDefault();
+					this.chesser.update_turn_idx(idx);
+				});
+			});
+		});
+	}
 
-    this.hideMenuButton = btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
-      btn.ariaLabel = "Hide Menu";
-      setIcon(btn, "x");
-      btn.addEventListener("click", (e: MouseEvent) => {
-        e.preventDefault();
-        this.parentEl.addClass('no-menu');
-      });
-    }) as HTMLAnchorElement;
-  }
-
-  public redrawMoveList() {
-    this.movesListEl.empty();
-    this.movesListEl.createDiv({
-      text: this.chesser.turn() === "b" ? "Black's turn" : "White's turn",
-      cls: "chess-turn-text",
-    });
-    this.movesListEl.createDiv("chess-move-list", (moveListEl) => {
-      this.chesser.history().forEach((move, idx) => {
-        const moveEl = moveListEl.createDiv({
-          cls: `chess-move ${
-            this.chesser.currentMoveIdx === idx ? "chess-move-active" : ""
-          }`,
-          text: move.san,
-        });
-        moveEl.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          this.chesser.update_turn_idx(idx);
-        });
-      });
-    });
-  }
-
-  public setMaxHeight(height: string) {
-    this.containerEl.style.maxHeight = height;
-  }
+	private setupResizeObserver() {
+		const boardEl = this.parentContainer.querySelector('.cg-wrap');
+		const resizeObserver = new ResizeObserver(entries => {
+			const width = entries[0].contentRect.width;
+			this.menuContainer.style.maxHeight = `${width}px`;
+		});
+		resizeObserver.observe(boardEl);
+	}
 }

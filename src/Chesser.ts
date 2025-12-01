@@ -179,7 +179,7 @@ export class Chesser extends MarkdownRenderChild {
     this.apply_coordinates(config.enableCoordinates);
 
     // Apply width (custom or default)
-    this.apply_custom_width(config.width);
+    this.apply_initial_board_width(user_config.boardWidth);
 
     // Activates the chess logic
     this.setFreeMove(config.free);
@@ -201,19 +201,18 @@ export class Chesser extends MarkdownRenderChild {
     } else {
       containerEl.addClass("no-menu");
     }
+
+    this.setupResizeObserver();
   }
 
   private set_style(el: HTMLElement, pieceStyle: string, boardStyle: string) {
     el.addClasses([pieceStyle, `${boardStyle}-board`, "chesser-container"]);
   }
 
-  private apply_custom_width(width?: string) {
+  private apply_initial_board_width(width: string) {
+    console.log(`apply_initial_board_width: ${width}`);
     const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
-    if (boardEl) {
-      // Use provided width, or fall back to default from settings
-      const finalWidth = width ?? this.user_config.boardWidth;
-      boardEl.style.maxWidth = finalWidth;
-    }
+    boardEl.style.width = width;
   }
 
   private apply_coordinates(enableCoordinates?: boolean) {
@@ -457,31 +456,17 @@ export class Chesser extends MarkdownRenderChild {
     this.sync_board_with_gamestate();
   }
 
-  public toggleMenuVisibility(): void {
-    const menuContainer = this.containerEl.querySelector('.chess-menu-container') as HTMLElement;
-    menuContainer.classList.add('hide-menu');
-    this.containerEl.addClass('no-menu');
-  }
-
-  private createShowMenuButton(): void {
-    // Remove existing button if any
-    this.removeShowMenuButton();
-    
-    const boardWrap = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
-    if (!boardWrap) return;
-    
-    const showButton = this.containerEl.createDiv('chess-show-menu-button');
-    showButton.setAttribute('aria-label', 'Show Menu');
-    showButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
-    showButton.addEventListener('click', () => {
-      this.toggleMenuVisibility();
-    });
-  }
-
-  private removeShowMenuButton(): void {
-    const existingButton = this.containerEl.querySelector('.chess-show-menu-button');
-    if (existingButton) {
-      existingButton.remove();
+  private setupResizeObserver() {
+    const sideMenuEl = this.containerEl.querySelector('.chess-menu-container') as HTMLElement;
+    if(!sideMenuEl) { // Side menu has been disabled
+      return
     }
+
+    const boardEl = this.containerEl.querySelector('.cg-wrap');
+    const resizeObserver = new ResizeObserver(entries => {
+      const width = entries[0].contentRect.width;
+      sideMenuEl.style.maxHeight = `${width}px`;
+    });
+    resizeObserver.observe(boardEl);
   }
 }

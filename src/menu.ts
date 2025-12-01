@@ -7,9 +7,11 @@ export default class ChesserMenu {
   private containerEl: HTMLElement;
   private movesListEl: HTMLElement;
   private hideMenuButton: HTMLAnchorElement;
+  private parentEl: HTMLElement;
 
   constructor(parentEl: HTMLElement, chesser: Chesser) {
     this.chesser = chesser;
+    this.parentEl = parentEl;
 
     this.containerEl = parentEl.createDiv("chess-menu-container", (containerEl) => {
       containerEl.createDiv({ cls: "chess-menu-section" }, (sectionEl) => {
@@ -129,10 +131,10 @@ export default class ChesserMenu {
 
     this.hideMenuButton = btnContainer.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
       btn.ariaLabel = "Hide Menu";
-      setIcon(btn, "menu");
+      setIcon(btn, "x");
       btn.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
-        this.chesser.toggleMenuVisibility();
+        this.parentEl.addClass('no-menu');
       });
     }) as HTMLAnchorElement;
   }
@@ -157,5 +159,9 @@ export default class ChesserMenu {
         });
       });
     });
+  }
+
+  public setMaxHeight(height: string) {
+    this.containerEl.style.maxHeight = height;
   }
 }

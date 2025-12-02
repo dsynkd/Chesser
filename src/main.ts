@@ -13,6 +13,20 @@ export default class ChessPlugin extends Plugin {
 			"chess",
 			draw_chessboard(this.app, this.settings)
 		);
+		
+		this.addCommand({
+			id: "chesser-toggle-sidebar",
+			name: "Toggle Sidebar",
+			callback: () => {
+				if(document.activeElement.hasClass('chesser-container') == false) { return }
+				if(document.activeElement.hasClass('no-menu')) {
+					document.activeElement.removeClass('no-menu');
+				} else {
+					document.activeElement.addClass('no-menu');
+				}
+			},
+			hotkeys: []
+		});
 	}
 
 	async loadSettings() {

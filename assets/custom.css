@@ -1,5 +1,6 @@
 .chesser-container {
 	--sidebar-menu-min-width: 150px;
+	--move-list-gap: 10px;
 }
 
 .chesser-container {
@@ -58,7 +59,7 @@ div.cg-wrap {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
-  flex: 1;
+	flex: 1;
 	min-width: var(--sidebar-menu-min-width);
 	padding-left: 10px;
 
@@ -87,6 +88,7 @@ div.cg-wrap {
 	display: flex;
 	flex-wrap: wrap;
 	overflow-y: scroll;
+	gap: var(--move-list-gap);
 }
 
 .chess-move {
@@ -94,12 +96,21 @@ div.cg-wrap {
 	cursor: pointer;
 	font-size: 80%;
 	padding: 4px;
-	width: 50%;
+	width: calc(50% - var(--move-list-gap));
+
+	&:hover {
+		background-color: var(--background-modifier-border);
+	}
 }
 
 .chess-move-active {
 	color: var(--text-normal);
 	font-weight: 500;
+	background-color: var(--color-accent);
+
+	&:hover {
+		background-color: var(--color-accent);
+	}
 }
 
 .chess-starting-position-dropdown {

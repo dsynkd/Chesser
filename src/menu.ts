@@ -86,7 +86,7 @@ export default class ChesserMenu {
 		this.toolbar.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
 
 			btn.ariaLabel = "Hide Menu";
-			setIcon(btn, "x");
+			setIcon(btn, "menu");
 
 			btn.addEventListener("click", (e: MouseEvent) => {
 				e.preventDefault();

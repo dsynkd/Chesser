@@ -1,13 +1,14 @@
 import { MarkdownView, Plugin } from "obsidian";
-import { draw_chessboard } from "./Chesser";
-import { Settings, ChesserSettingTab, DEFAULT_SETTINGS } from "./settings";
+import { draw_chessboard, ChessView } from "./view";
+import { Settings, ChessPluginSettingTab, DEFAULT_SETTINGS } from "./settings";
 
-export default class ChesserPlugin extends Plugin {
+export default class ChessPlugin extends Plugin {
 	settings: Settings;
+	private activeChessViews: Set<ChessView> = new Set();
 
 	async onload() {
 		await this.loadSettings();
-		this.addSettingTab(new ChesserSettingTab(this.app, this));
+		this.addSettingTab(new ChessPluginSettingTab(this.app, this));
 		this.registerMarkdownCodeBlockProcessor(
 			"chess",
 			draw_chessboard(this.app, this.settings)

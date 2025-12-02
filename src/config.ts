@@ -1,8 +1,7 @@
 import { parseYaml } from "obsidian";
-
 import { Settings } from "./settings";
 
-export interface ChesserConfig extends Settings {
+export interface Config extends Settings {
 	id?: string;
 	fen: string;
 	pgn?: string;
@@ -43,13 +42,20 @@ export const PIECE_STYLES = [
 	"staunty",
 	"tatiana",
 ];
-export const BOARD_STYLES = ["blue", "brown", "green", "ic", "purple"];
+
+export const BOARD_STYLES = [
+	"blue",
+	"brown",
+	"green",
+	"ic",
+	"purple"
+];
 
 export function parse_user_config(
 	settings: Settings,
 	content: string
-): ChesserConfig {
-	let userConfig: ChesserConfig = {
+): Config {
+	let userConfig: Config = {
 		...settings,
 		fen: "",
 	};

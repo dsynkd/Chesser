@@ -1,15 +1,15 @@
 import { setIcon, Setting } from "obsidian";
-import { Chesser } from "./Chesser";
+import { ChessView } from "./view";
 
 export default class ChesserMenu {
-	private chesser: Chesser;
+	private view: ChessView;
 	private menuContainer: HTMLElement;
 	private movesListEl: HTMLElement;
 	private toolbar: HTMLElement;
 	private parentContainer: HTMLElement;
 
-	constructor(parentEl: HTMLElement, chesser: Chesser) {
-		this.chesser = chesser;
+	constructor(parentEl: HTMLElement, view: ChessView) {
+		this.view = view;
 		this.parentContainer = parentEl;
 		this.menuContainer = this.parentContainer.createDiv("chess-menu-container");
 		this.movesListEl = this.menuContainer.createDiv("chess-menu-section");
@@ -21,35 +21,35 @@ export default class ChesserMenu {
 
 	private createToolbar() {
 		this.toolbar = this.menuContainer.createDiv("chess-toolbar-container");
-		this.createUndoButton();
-		this.createRedoButton();
+		this.createPreviousMoveButton();
+		this.createNextMoveButton();
 		this.createFlipBoardButton();
 		this.createResetButton();
 		this.createHideMenuButton();
 	}
 
-	private createUndoButton() {
+	private createPreviousMoveButton() {
 		this.toolbar.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
 
-			btn.ariaLabel = "Undo";
+			btn.ariaLabel = "Previous Move";
 			setIcon(btn, "left-arrow");
 
 			btn.addEventListener("click", (e: MouseEvent) => {
 				e.preventDefault();
-				this.chesser.undo_move();
+				this.view.previousMove();
 			});
 		});
 	}
 
-	private createRedoButton() {
+	private createNextMoveButton() {
 		this.toolbar.createEl("a", "view-action", (btn: HTMLAnchorElement) => {
 
-			btn.ariaLabel = "Redo";
+			btn.ariaLabel = "Next Move";
 			setIcon(btn, "right-arrow");
 
 			btn.addEventListener("click", (e: MouseEvent) => {
 				e.preventDefault();
-				this.chesser.redo_move();
+				this.view.nextMove();
 			});
 		});
 	}
@@ -62,8 +62,8 @@ export default class ChesserMenu {
 			
 			btn.addEventListener("click", (e: MouseEvent) => {
 				e.preventDefault();
-				while (this.chesser.currentMoveIdx >= 0) {
-					this.chesser.undo_move();
+				while (this.view.currentMoveIdx >= 0) {
+					this.view.previousMove();
 				}
 			});
 		});
@@ -77,7 +77,7 @@ export default class ChesserMenu {
 
 			btn.addEventListener("click", (e: MouseEvent) => {
 				e.preventDefault();
-				this.chesser.flipBoard();
+				this.view.flipBoard();
 			});
 		});
 	}
@@ -98,20 +98,20 @@ export default class ChesserMenu {
 	public redrawMoveList() {
 		this.movesListEl.empty();
 		this.movesListEl.createDiv({
-			text: this.chesser.turn() === "b" ? "Black's turn" : "White's turn",
+			text: this.view.turn() === "b" ? "Black's turn" : "White's turn",
 			cls: "chess-turn-text",
 		});
 		this.movesListEl.createDiv("chess-move-list", (moveListEl) => {
-			this.chesser.history().forEach((move, idx) => {
+			this.view.history().forEach((move, idx) => {
 				const moveEl = moveListEl.createDiv({
 					cls: `chess-move ${
-						this.chesser.currentMoveIdx === idx ? "chess-move-active" : ""
+						this.view.currentMoveIdx === idx ? "chess-move-active" : ""
 					}`,
 					text: move.san,
 				});
 				moveEl.addEventListener("click", (ev) => {
 					ev.preventDefault();
-					this.chesser.update_turn_idx(idx);
+					this.view.update_turn_idx(idx);
 				});
 			});
 		});

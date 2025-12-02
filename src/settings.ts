@@ -27,7 +27,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	enableCoordinates: true,
 };
 
-export class ChesserSettingTab extends PluginSettingTab {
+export class ChessPluginSettingTab extends PluginSettingTab {
 	plugin: ChesserPlugin;
 
 	constructor(app: App, plugin: ChesserPlugin) {

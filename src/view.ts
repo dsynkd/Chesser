@@ -15,9 +15,10 @@ import { Api } from "chessground/api";
 import { Color, Key } from "chessground/types";
 import { DrawShape } from "chessground/draw";
 
-import { ChesserConfig, parse_user_config } from "./config";
+import { Config, parse_user_config } from "./config";
 import { Settings } from "./settings";
-import ChesserMenu from "./menu";
+import ChessViewMenu from "./menu";
+import type ChessPlugin from "./main";
 
 // To bundle all css files in styles.css with rollup
 import "../assets/custom.css";
@@ -62,7 +63,7 @@ import "../assets/board-css/ic.css";
 export function draw_chessboard(app: App, settings: Settings) {
 	return (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
 		// Detect raw PGN codeblock
-		let user_config: ChesserConfig;
+		let user_config: Config;
 		if (source[0] == "1") {
 			user_config = {
 				...settings,
@@ -72,7 +73,7 @@ export function draw_chessboard(app: App, settings: Settings) {
 		} else {
 			user_config = parse_user_config(settings, source);
 		}
-		ctx.addChild(new Chesser(el, ctx, user_config, app));
+		ctx.addChild(new ChessView(el, ctx, user_config, app));
 	};
 }
 
@@ -86,11 +87,11 @@ function read_state(id: string) {
 	return {};
 }
 
-function write_state(id: string, game_state: ChesserConfig) {
+function write_state(id: string, game_state: Config) {
 	localStorage.setItem(`chesser-${id}`, JSON.stringify(game_state));
 }
 
-export class Chesser extends MarkdownRenderChild {
+export class ChessView extends MarkdownRenderChild {
 	private ctx: MarkdownPostProcessorContext;
 	private app: App;
 
@@ -98,16 +99,16 @@ export class Chesser extends MarkdownRenderChild {
 	private cg: Api;
 	private chess: Chess;
 
-	private menu: ChesserMenu;
+	private menu: ChessViewMenu;
 	private moves: Move[];
-	private user_config: ChesserConfig;
+	private user_config: Config;
 
 	public currentMoveIdx: number;
 
 	constructor(
 		containerEl: HTMLElement,
 		ctx: MarkdownPostProcessorContext,
-		user_config: ChesserConfig,
+		user_config: Config,
 		app: App
 	) {
 		super(containerEl);
@@ -137,7 +138,7 @@ export class Chesser extends MarkdownRenderChild {
 				this.chess.loadPgn(config.pgn);
 			} catch (e) {
 				console.warn(e);
-				new Notice(`[Chesser] ${e.message}`);
+				new Notice(`[ChessView] ${e.message}`);
 				const errorEl = containerEl.createDiv("chesser-error");
 				errorEl.textContent = `${e.message}`;
 				return;
@@ -170,7 +171,7 @@ export class Chesser extends MarkdownRenderChild {
 				},
 			});
 		} catch (e) {
-			new Notice("Chesser error: Invalid config");
+			new Notice("ChessView error: Invalid config");
 			console.error(e);
 			return;
 		}
@@ -197,11 +198,12 @@ export class Chesser extends MarkdownRenderChild {
 		const shouldHideMenu = config.hideMenu !== undefined ? config.hideMenu : !config.enableSideMenu;
 		
 		if (!shouldHideMenu) {
-			this.menu = new ChesserMenu(containerEl, this);
+			this.menu = new ChessViewMenu(containerEl, this);
 		} else {
 			containerEl.addClass("no-menu");
 		}
 
+		// Setup focus handling for keyboard shortcuts
 		this.setupKeyboardShortcuts();
 	}
 
@@ -210,7 +212,7 @@ export class Chesser extends MarkdownRenderChild {
 	}
 
 	private setupKeyboardShortcuts() {
-		// Make container focusable so it can receive keyboard events
+		// Make container focusable so commands can detect it as active
 		this.containerEl.setAttribute("tabindex", "0");
 		this.containerEl.style.outline = "none"; // Remove focus outline for cleaner look
 
@@ -225,14 +227,15 @@ export class Chesser extends MarkdownRenderChild {
 				e.stopPropagation();
 				
 				if (e.key === "ArrowLeft") {
-					this.undo_move();
+					this.previousMove();
 				} else if (e.key === "ArrowRight") {
-					this.redo_move();
+					this.nextMove();
 				}
 			}
 		});
 
 		// Focus the container when clicking anywhere within it
+		// This allows Obsidian commands to detect which chesser instance is active
 		this.containerEl.addEventListener("click", (e: MouseEvent) => {
 			// Only focus if clicking directly on the container or board, not on interactive elements like buttons
 			const target = e.target as HTMLElement;
@@ -271,7 +274,7 @@ export class Chesser extends MarkdownRenderChild {
 		];
 	}
 
-	private get_config(view: MarkdownView): ChesserConfig | undefined {
+	private get_config(view: MarkdownView): Config | undefined {
 		const [from, to] = this.get_section_range();
 		var codeblockText = view.editor.getRange(from, to);
 		// Detect PGN codeblock
@@ -288,13 +291,13 @@ export class Chesser extends MarkdownRenderChild {
 		return undefined;
 	}
 
-	private async write_config(config: Partial<ChesserConfig>) {
+	private async write_config(config: Partial<Config>) {
 
 		console.debug("writing config to localStorage", config);
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view) {
-			new Notice("Chesser: Failed to retrieve active view");
-			console.error("Chesser: Failed to retrieve view when writing config");
+			new Notice("ChessView: Failed to retrieve active view");
+			console.error("ChessView: Failed to retrieve view when writing config");
 		}
 		try {
 			const updated = stringifyYaml({
@@ -374,11 +377,11 @@ export class Chesser extends MarkdownRenderChild {
 		return this.chess.inCheck();
 	}
 
-	public undo_move() {
+	public previousMove() {
 		this.update_turn_idx(this.currentMoveIdx - 1);
 	}
 
-	public redo_move() {
+	public nextMove() {
 		this.update_turn_idx(this.currentMoveIdx + 1);
 	}
 

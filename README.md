@@ -95,7 +95,7 @@ rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
 
 When a chessboard is focused, you can use left and right arrow keys for Previous/Next move commands.
 
-You can also use a hotkey for toggling the sidebar.
+You can also use a hotkey for toggling the sidebar, which is configurable in the Obsidian hotkeys for this plugin.
 
 ## License
 

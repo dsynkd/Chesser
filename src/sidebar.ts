@@ -11,8 +11,8 @@ export default class Sidebar {
 	constructor(parentEl: HTMLElement, view: ChessView) {
 		this.view = view;
 		this.parentContainer = parentEl;
-		this.menuContainer = this.parentContainer.createDiv("chess-menu-container");
-		this.movesListEl = this.menuContainer.createDiv("chess-menu-section");
+		this.menuContainer = this.parentContainer.createDiv("chess-sidebar");
+		this.movesListEl = this.menuContainer.createDiv("chess-sidebar-section");
 
 		this.redrawMoveList();
 		this.createToolbar();
@@ -20,7 +20,7 @@ export default class Sidebar {
 	}
 
 	private createToolbar() {
-		this.toolbar = this.menuContainer.createDiv("chess-toolbar-container");
+		this.toolbar = this.menuContainer.createDiv("chess-toolbar");
 		this.createPreviousMoveButton();
 		this.createNextMoveButton();
 		this.createFlipBoardButton();

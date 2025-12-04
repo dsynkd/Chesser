@@ -1,7 +1,7 @@
 import { setIcon, Setting } from "obsidian";
 import { ChessView } from "./view";
 
-export default class ChesserMenu {
+export default class Sidebar {
 	private view: ChessView;
 	private menuContainer: HTMLElement;
 	private movesListEl: HTMLElement;

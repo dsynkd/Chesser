@@ -5,10 +5,8 @@ export interface Config extends Settings {
 	id?: string;
 	fen: string;
 	pgn?: string;
-	shapes?: any;
 	currentMoveIdx?: number;
 	moves?: string[];
-	hideMenu?: boolean;
 }
 
 const ORIENTATIONS = ["white", "black"];
@@ -51,22 +49,16 @@ export const BOARD_STYLES = [
 	"purple"
 ];
 
-export function parse_user_config(
+export function parseUserConfig(
 	settings: Settings,
 	content: string
-): Config {
-	let userConfig: Config = {
-		...settings,
-		fen: "",
-	};
-
+): Config | null {
 	try {
 		return {
-			...userConfig,
+			...settings,
 			...parseYaml(content),
 		};
-	} catch (e) {
-		// failed to parse
-		return userConfig;
+	} catch (e) { // Will get handled at drawChessboard
+		return null;
 	}
 }

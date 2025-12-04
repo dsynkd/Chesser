@@ -13,12 +13,10 @@ import { Chess, Move, SQUARES } from "chess.js";
 import { Chessground } from "chessground";
 import { Api } from "chessground/api";
 import { Color, Key } from "chessground/types";
-import { DrawShape } from "chessground/draw";
 
-import { Config, parse_user_config } from "./config";
+import { Config, parseUserConfig } from "./config";
 import { Settings } from "./settings";
-import ChessViewMenu from "./menu";
-import type ChessPlugin from "./main";
+import Sidebar from "./sidebar";
 
 // To bundle all css files in styles.css with rollup
 import "../assets/custom.css";
@@ -60,95 +58,30 @@ import "../assets/board-css/green.css";
 import "../assets/board-css/purple.css";
 import "../assets/board-css/ic.css";
 
-export function draw_chessboard(app: App, settings: Settings) {
-	return (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-		// Detect raw PGN codeblock
-		let user_config: Config;
-		if (source[0] == "1") {
-			user_config = {
-				...settings,
-				fen: "",
-				pgn: source.trim(),
-			}; 
-		} else {
-			user_config = parse_user_config(settings, source);
-		}
-		ctx.addChild(new ChessView(el, ctx, user_config, app));
-	};
-}
-
-function read_state(id: string) {
-	const savedDataStr = localStorage.getItem(`chesser-${id}`);
-	try {
-		return JSON.parse(savedDataStr);
-	} catch (e) {
-		console.error(e);
-	}
-	return {};
-}
-
-function write_state(id: string, game_state: Config) {
-	localStorage.setItem(`chesser-${id}`, JSON.stringify(game_state));
-}
-
 export class ChessView extends MarkdownRenderChild {
 	private ctx: MarkdownPostProcessorContext;
 	private app: App;
-
-	private id: string;
 	private cg: Api;
 	private chess: Chess;
-
-	private menu: ChessViewMenu;
+	private sidebar: Sidebar;
 	private moves: Move[];
-	private user_config: Config;
+	private config: Config;
 
 	public currentMoveIdx: number;
 
 	constructor(
 		containerEl: HTMLElement,
 		ctx: MarkdownPostProcessorContext,
-		user_config: Config,
+		config: Config,
 		app: App
 	) {
 		super(containerEl);
 
-		this.app = app;
-		this.ctx = ctx;
 		this.chess = new Chess();
-		this.user_config = user_config;
-		this.id = user_config.id ?? nanoid(8);
+		this.config = config;
+		this.loadMoveList()
 
-		const saved_config = read_state(this.id);
-		const config = Object.assign({}, user_config, saved_config);
-
-		this.sync_board_with_gamestate = this.sync_board_with_gamestate.bind(this);
-		this.save_move = this.save_move.bind(this);
-		this.save_shapes = this.save_shapes.bind(this);
-
-		if (user_config.statePersistence && user_config.id === undefined) {
-			this.app.workspace.onLayoutReady(async () => {
-				await this.write_config({ id: this.id });
-			});
-		}
-
-		if (config.pgn) {
-			console.debug("loading from pgn", config.pgn);
-			try {
-				this.chess.loadPgn(config.pgn);
-			} catch (e) {
-				console.warn(e);
-				new Notice(`[ChessView] ${e.message}`);
-				const errorEl = containerEl.createDiv("chesser-error");
-				errorEl.textContent = `${e.message}`;
-				return;
-			}
-		} else if (config.fen) {
-			console.debug("loading from fen", config.fen);
-			this.chess.load(config.fen);
-		}
-
-		this.moves = config.moves ?? this.chess.history({ verbose: true });
+		this.moves = this.chess.history({ verbose: true });
 		this.currentMoveIdx = config.currentMoveIdx ?? this.moves.length - 1;
 
 		let lastMove: [Key, Key] = undefined;
@@ -157,8 +90,7 @@ export class ChessView extends MarkdownRenderChild {
 			lastMove = [move.from, move.to];
 		}
 
-		// Setup UI
-		this.set_style(containerEl, config.pieceStyle, config.boardStyle);
+		this.applyStyles(containerEl, config.pieceStyle, config.boardStyle);
 		try {
 			this.cg = Chessground(containerEl.createDiv(), {
 				fen: this.chess.fen(),
@@ -166,8 +98,7 @@ export class ChessView extends MarkdownRenderChild {
 				orientation: config.orientation as Color,
 				viewOnly: config.viewOnly,
 				drawable: {
-					enabled: config.drawable,
-					onChange: this.save_shapes,
+					enabled: config.drawable
 				},
 			});
 		} catch (e) {
@@ -175,49 +106,59 @@ export class ChessView extends MarkdownRenderChild {
 			console.error(e);
 			return;
 		}
-
-		// Apply grid labels visibility
-		this.apply_coordinates(config.enableCoordinates);
-
-		// Apply width (custom or default)
-		this.apply_initial_board_width(user_config.boardWidth);
-
-		// Activates the chess logic
-		this.setFreeMove(config.free);
-
-		// Draw saved shapes
-		if (config.shapes) {
-			this.app.workspace.onLayoutReady(() => {
-				window.setTimeout(() => {
-					this.sync_board_with_gamestate(false);
-					this.cg.setShapes(config.shapes);
-				}, 100);
-			});
-		}
-
-		const shouldHideMenu = config.hideMenu !== undefined ? config.hideMenu : !config.enableSideMenu;
-		
-		if (!shouldHideMenu) {
-			this.menu = new ChessViewMenu(containerEl, this);
-		} else {
-			containerEl.addClass("no-menu");
-		}
-
-		// Setup focus handling for keyboard shortcuts
+		this.applyCoordinates(config.enableCoordinates);
+		this.applyInitialBoardWidth(config.boardWidth);
+		this.setupSidebar()
 		this.setupKeyboardShortcuts();
 	}
 
-	private set_style(el: HTMLElement, pieceStyle: string, boardStyle: string) {
-		el.addClasses([pieceStyle, `${boardStyle}-board`, "chesser-container"]);
+	private loadMoveList() {
+		if (this.config.pgn && this.config.fen) {
+			const error = 'Both FEN and PGN detected.'
+			console.warn(error);
+			new Notice(`[ChessView] ${error}`);
+			const errorEl = this.containerEl.createDiv("chesser-error");
+			errorEl.textContent = `${error}`;
+			return;
+		} else if (this.config.pgn) {
+			try {
+				this.chess.loadPgn(this.config.pgn);
+			} catch (error) {
+				console.warn(error);
+				new Notice(`[ChessView] ${error.message}`);
+				const errorEl = this.containerEl.createDiv("chesser-error");
+				errorEl.textContent = `${error.message}`;
+				return;
+			}
+		} else if (this.config.fen) {
+			this.chess.load(this.config.fen);
+		} else {
+			const error = "No FEN or PGN found.";
+			console.warn(error);
+			new Notice(`[ChessView] ${error}`);
+			const errorEl = this.containerEl.createDiv("chesser-error");
+			errorEl.textContent = `${error}`;
+			return;
+		}
+	}
+
+	private applyStyles(el: HTMLElement, pieceStyle: string, boardStyle: string) {
+		el.addClasses([pieceStyle, `${boardStyle}-board`, "chess-view"]);
+	}
+
+	private setupSidebar() {
+		if (this.config.showSidebar) {
+			this.sidebar = new Sidebar(this.containerEl, this);
+		} else {
+			this.containerEl.addClass("no-menu");
+		}
 	}
 
 	private setupKeyboardShortcuts() {
-		// Make container focusable so commands can detect it as active
 		this.containerEl.setAttribute("tabindex", "0");
-		this.containerEl.style.outline = "none"; // Remove focus outline for cleaner look
+		this.containerEl.style.outline = "none";
 
 		this.containerEl.addEventListener("keydown", (e: KeyboardEvent) => {
-			// Check if the container or any of its children are focused/active
 			const activeElement = document.activeElement;
 			const isFocused = activeElement === this.containerEl || 
 			                  this.containerEl.contains(activeElement);
@@ -234,125 +175,25 @@ export class ChessView extends MarkdownRenderChild {
 			}
 		});
 
-		// Focus the container when clicking anywhere within it
-		// This allows Obsidian commands to detect which chesser instance is active
 		this.containerEl.addEventListener("click", (e: MouseEvent) => {
-			// Only focus if clicking directly on the container or board, not on interactive elements like buttons
 			const target = e.target as HTMLElement;
-			if (target === this.containerEl || target.closest('.chesser-container')) {
+			if (target === this.containerEl || target.closest('.chess-view')) {
 				this.containerEl.focus();
 			}
 		}, true); // Use capture phase to catch clicks early
 	}
 
-	private apply_initial_board_width(width: string) {
+	private applyInitialBoardWidth(width: string) {
 		const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
 		boardEl.style.width = width;
 	}
 
-	private apply_coordinates(enableCoordinates?: boolean) {
+	private applyCoordinates(enableCoordinates?: boolean) {
 		const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
 		if (enableCoordinates === true) {
 			boardEl?.addClass('chesser-show-coords');
 		} else {
 			boardEl?.removeClass('chesser-show-coords');
-		}
-	}
-
-	private get_section_range(): [EditorPosition, EditorPosition] {
-		const sectionInfo = this.ctx.getSectionInfo(this.containerEl);
-
-		return [
-			{
-				line: sectionInfo.lineStart + 1,
-				ch: 0,
-			},
-			{
-				line: sectionInfo.lineEnd,
-				ch: 0,
-			},
-		];
-	}
-
-	private get_config(view: MarkdownView): Config | undefined {
-		const [from, to] = this.get_section_range();
-		var codeblockText = view.editor.getRange(from, to);
-		// Detect PGN codeblock
-		if (codeblockText[0] == "1") {
-			codeblockText = "pgn: |\n" + codeblockText.replace(/^/, "	");
-		}
-		try {
-			return parseYaml(codeblockText);
-		} catch (e) {
-			console.debug("failed to parse codeblock's yaml config", codeblockText);
-			// failed to parse. show error...
-		}
-
-		return undefined;
-	}
-
-	private async write_config(config: Partial<Config>) {
-
-		console.debug("writing config to localStorage", config);
-		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (!view) {
-			new Notice("ChessView: Failed to retrieve active view");
-			console.error("ChessView: Failed to retrieve view when writing config");
-		}
-		try {
-			const updated = stringifyYaml({
-				...this.get_config(view),
-				...config,
-			});
-
-			const [from, to] = this.get_section_range();
-			view.editor.replaceRange(updated, from, to);
-		} catch (e) {
-			// failed to parse. show error...
-			console.error("failed to write config", e);
-		}
-	}
-
-	private save_move() {
-		// Don't save if state persistence is disabled
-		if (!this.user_config.statePersistence) return;
-		
-		const config = read_state(this.id);
-		write_state(this.id, {
-			...config,
-			currentMoveIdx: this.currentMoveIdx,
-			moves: this.moves,
-			pgn: this.chess.pgn(),
-		});
-	}
-
-	private save_shapes(shapes: DrawShape[]) {
-		// Don't save if state persistence is disabled
-		if (!this.user_config.statePersistence) return;
-		
-		const config = read_state(this.id);
-		write_state(this.id, {
-			...config,
-			shapes,
-		});
-	}
-
-	private sync_board_with_gamestate(shouldSave: boolean = true) {
-		this.cg.set({
-			check: this.check(),
-			turnColor: this.color_turn(),
-			movable: {
-				free: false,
-				color: this.color_turn(),
-				dests: this.dests(),
-			},
-		});
-
-		if (this.menu) {
-			this.menu.redrawMoveList();
-		}
-		if (shouldSave) {
-			this.save_move();
 		}
 	}
 
@@ -414,34 +255,6 @@ export class ChessView extends MarkdownRenderChild {
 			fen: this.chess.fen(),
 			lastMove,
 		});
-		this.sync_board_with_gamestate();
-	}
-
-	public setFreeMove(enabled: boolean): void {
-		if (enabled) {
-			this.cg.set({
-				events: {
-					move: this.save_move,
-				},
-				movable: {
-					free: true,
-					color: "both",
-					dests: undefined,
-				},
-			});
-		} else {
-			this.cg.set({
-				events: {
-					move: (orig: any, dest: any) => {
-						const move = this.chess.move({ from: orig, to: dest });
-						this.currentMoveIdx++;
-						this.moves = [...this.moves.slice(0, this.currentMoveIdx), move];
-						this.sync_board_with_gamestate();
-					},
-				},
-			});
-			this.sync_board_with_gamestate();
-		}
 	}
 
 	public turn() {
@@ -488,6 +301,5 @@ export class ChessView extends MarkdownRenderChild {
 		}
 
 		this.cg.set({ fen: this.chess.fen(), lastMove });
-		this.sync_board_with_gamestate();
 	}
 }

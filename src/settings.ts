@@ -9,8 +9,7 @@ export interface Settings {
 	drawable: boolean;
 	pieceStyle: string;
 	boardStyle: string;
-	enableSideMenu: boolean;
-	statePersistence: boolean;
+	showSidebar: boolean;
 	boardWidth: string;
 	enableCoordinates: boolean;
 }
@@ -21,8 +20,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	drawable: true,
 	pieceStyle: "cburnett",
 	boardStyle: "brown",
-	enableSideMenu: true,
-	statePersistence: true,
+	showSidebar: true,
 	boardWidth: "400px",
 	enableCoordinates: true,
 };
@@ -40,22 +38,11 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		new Setting(containerEl)
-			.setName("State Persistence")
-			.setDesc("If enabled, chess boards will remember their state (moves, annotations) across sessions.")
-			.addToggle((toggle) => {
-				toggle.setValue(this.plugin.settings.statePersistence).onChange((statePersistence) => {
-					this.plugin.settings.statePersistence = statePersistence;
-					this.plugin.saveSettings();
-				});
-			});
-
 		// Chessboard Section
 		containerEl.createEl('h2', { text: 'Chessboard' });
 
 		new Setting(containerEl)
 			.setName("Piece Style")
-			.setDesc("Sets the piece style.")
 			.addDropdown((dropdown) => {
 				let styles: Record<string, string> = {};
 				PIECE_STYLES.map((style) => (styles[style] = style));
@@ -69,7 +56,6 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Board Style")
-			.setDesc("Sets the board style.")
 			.addDropdown((dropdown) => {
 				let styles: Record<string, string> = {};
 				BOARD_STYLES.map((style) => (styles[style] = style));
@@ -82,8 +68,7 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Board Width")
-			.setDesc("Sets the default width of chess boards (e.g., '400px', '50%', '30em').")
+			.setName("Initial Board Width")
 			.addText((text) => {
 				text.setValue(this.plugin.settings.boardWidth)
 					.onChange((value) => {
@@ -95,8 +80,7 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Orientation")
-			.setDesc("Sets the default board orientation.")
+			.setName("Default Orientation")
 			.addDropdown((dropdown) => {
 				dropdown.addOption("white", "White");
 				dropdown.addOption("black", "Black");
@@ -118,16 +102,6 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Drawable")
-			.setDesc("Controls the ability to draw annotations (arrows, circles) on the board.")
-			.addToggle((toggle) => {
-				toggle.setValue(this.plugin.settings.drawable).onChange((drawable) => {
-					this.plugin.settings.drawable = drawable;
-					this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
 			.setName("View-only")
 			.setDesc("If enabled, displays a static chess board (no moves, annotations, ...).")
 			.addToggle((toggle) => {
@@ -137,15 +111,24 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 				});
 			});
 
-		// Side Menu Section
-		containerEl.createEl('h2', { text: 'Side Menu' });
+		new Setting(containerEl)
+			.setName("Drawable")
+			.setDesc("Controls the ability to draw annotations (arrows, circles) on the board.")
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.drawable).onChange((drawable) => {
+					this.plugin.settings.drawable = drawable;
+					this.plugin.saveSettings();
+				});
+			});
+
+		containerEl.createEl('h2', { text: 'Sidebar' });
 
 		new Setting(containerEl)
-			.setName("Enable Side Menu")
-			.setDesc("Shows the side menu with move history and controls.")
+			.setName("Show Sidebar")
+			.setDesc("Displays a sidebar containing move history and controls.")
 			.addToggle((toggle) => {
-				toggle.setValue(this.plugin.settings.enableSideMenu).onChange((enableSideMenu) => {
-					this.plugin.settings.enableSideMenu = enableSideMenu;
+				toggle.setValue(this.plugin.settings.showSidebar).onChange((showSidebar) => {
+					this.plugin.settings.showSidebar = showSidebar;
 					this.plugin.saveSettings();
 				});
 			});

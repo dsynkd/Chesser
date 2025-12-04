@@ -1,9 +1,9 @@
-.chesser-container {
+.chess-view {
 	--sidebar-menu-min-width: 150px;
 	--move-list-gap: 10px;
 }
 
-.chesser-container {
+.chess-view {
 	display: flex;
 	align-items: flex-start;
 	border: 1px solid var(--background-modifier-border);

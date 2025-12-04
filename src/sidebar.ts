@@ -62,7 +62,7 @@ export default class Sidebar {
 			
 			btn.addEventListener("click", (e: MouseEvent) => {
 				e.preventDefault();
-				while (this.view.currentMoveIdx >= 0) {
+				while (this.view.currentMoveIndex >= 0) {
 					this.view.previousMove();
 				}
 			});
@@ -105,13 +105,13 @@ export default class Sidebar {
 			this.view.history().forEach((move, idx) => {
 				const moveEl = moveListEl.createDiv({
 					cls: `chess-move ${
-						this.view.currentMoveIdx === idx ? "chess-move-active" : ""
+						this.view.currentMoveIndex === idx ? "chess-move-active" : ""
 					}`,
 					text: move.san,
 				});
 				moveEl.addEventListener("click", (ev) => {
 					ev.preventDefault();
-					this.view.update_turn_idx(idx);
+					this.view.setMoveIndex(idx);
 				});
 			});
 		});

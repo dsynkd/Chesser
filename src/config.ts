@@ -5,7 +5,7 @@ export interface Config extends Settings {
 	id?: string;
 	fen: string;
 	pgn?: string;
-	currentMoveIdx?: number;
+	currentMoveIndex?: number;
 	moves?: string[];
 }
 

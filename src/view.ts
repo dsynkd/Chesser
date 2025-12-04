@@ -1,21 +1,15 @@
-import { nanoid } from "nanoid";
 import {
 	App,
-	EditorPosition,
 	MarkdownPostProcessorContext,
 	MarkdownRenderChild,
-	MarkdownView,
 	Notice,
-	parseYaml,
-	stringifyYaml,
 } from "obsidian";
 import { Chess, Move, SQUARES } from "chess.js";
 import { Chessground } from "chessground";
 import { Api } from "chessground/api";
 import { Color, Key } from "chessground/types";
 
-import { Config, parseUserConfig } from "./config";
-import { Settings } from "./settings";
+import { Config } from "./config";
 import Sidebar from "./sidebar";
 
 // To bundle all css files in styles.css with rollup
@@ -67,7 +61,7 @@ export class ChessView extends MarkdownRenderChild {
 	private moves: Move[];
 	private config: Config;
 
-	public currentMoveIdx: number;
+	public currentMoveIndex: number;
 
 	constructor(
 		containerEl: HTMLElement,
@@ -77,36 +71,25 @@ export class ChessView extends MarkdownRenderChild {
 	) {
 		super(containerEl);
 
+		this.app = app
+		this.ctx = ctx
 		this.chess = new Chess();
 		this.config = config;
-		this.loadMoveList()
+		
+		if(!this.loadMoveList()) { return }
 
 		this.moves = this.chess.history({ verbose: true });
-		this.currentMoveIdx = config.currentMoveIdx ?? this.moves.length - 1;
+		this.currentMoveIndex = config.currentMoveIndex ?? this.moves.length - 1;
 
 		let lastMove: [Key, Key] = undefined;
-		if (this.currentMoveIdx >= 0) {
-			const move = this.moves[this.currentMoveIdx];
+		if (this.currentMoveIndex >= 0) {
+			const move = this.moves[this.currentMoveIndex];
 			lastMove = [move.from, move.to];
 		}
 
-		this.applyStyles(containerEl, config.pieceStyle, config.boardStyle);
-		try {
-			this.cg = Chessground(containerEl.createDiv(), {
-				fen: this.chess.fen(),
-				lastMove,
-				orientation: config.orientation as Color,
-				viewOnly: config.viewOnly,
-				drawable: {
-					enabled: config.drawable
-				},
-			});
-		} catch (e) {
-			new Notice("ChessView error: Invalid config");
-			console.error(e);
-			return;
-		}
-		this.applyCoordinates(config.enableCoordinates);
+		this.applyStyles();
+		this.setupChessground(lastMove);
+		this.applyCoordinates();
 		this.applyInitialBoardWidth(config.boardWidth);
 		this.setupSidebar()
 		this.setupKeyboardShortcuts();
@@ -114,36 +97,57 @@ export class ChessView extends MarkdownRenderChild {
 
 	private loadMoveList() {
 		if (this.config.pgn && this.config.fen) {
-			const error = 'Both FEN and PGN detected.'
-			console.warn(error);
-			new Notice(`[ChessView] ${error}`);
-			const errorEl = this.containerEl.createDiv("chesser-error");
-			errorEl.textContent = `${error}`;
-			return;
-		} else if (this.config.pgn) {
+			this.presentError("Both FEN and PGN detected.");
+			return false;
+		}
+		else if (this.config.pgn) {
 			try {
 				this.chess.loadPgn(this.config.pgn);
 			} catch (error) {
-				console.warn(error);
-				new Notice(`[ChessView] ${error.message}`);
-				const errorEl = this.containerEl.createDiv("chesser-error");
-				errorEl.textContent = `${error.message}`;
-				return;
+				this.presentError(error.message);
+				return false;
 			}
-		} else if (this.config.fen) {
-			this.chess.load(this.config.fen);
-		} else {
-			const error = "No FEN or PGN found.";
-			console.warn(error);
-			new Notice(`[ChessView] ${error}`);
-			const errorEl = this.containerEl.createDiv("chesser-error");
-			errorEl.textContent = `${error}`;
-			return;
 		}
+		else if (this.config.fen) {
+			try {
+				this.chess.load(this.config.fen);
+			} catch (error) {
+				this.presentError(error.message);
+				return false;
+			}
+		}
+		else {
+			this.presentError("No FEN or PGN found.");
+			return false;
+		}
+		return true;
 	}
 
-	private applyStyles(el: HTMLElement, pieceStyle: string, boardStyle: string) {
-		el.addClasses([pieceStyle, `${boardStyle}-board`, "chess-view"]);
+	private setupChessground(lastMove: [Key, Key]) {
+		this.cg = Chessground(this.containerEl.createDiv(), {
+			fen: this.chess.fen(),
+			lastMove,
+			orientation: this.config.orientation as Color,
+			viewOnly: this.config.viewOnly,
+			drawable: {
+				enabled: this.config.drawable
+			},
+			events: {
+				move: (orig: any, dest: any) => {
+					const move = this.chess.move({ from: orig, to: dest });
+					this.currentMoveIndex++;
+					this.moves = [...this.moves.slice(0, this.currentMoveIndex), move];
+					this.syncChessground();
+				},
+			}
+		});
+	}
+
+	private applyStyles() {
+		this.containerEl.addClasses([
+			this.config.pieceStyle,
+			`${this.config.boardStyle}-board`, "chess-view"]
+		);
 	}
 
 	private setupSidebar() {
@@ -151,6 +155,20 @@ export class ChessView extends MarkdownRenderChild {
 			this.sidebar = new Sidebar(this.containerEl, this);
 		} else {
 			this.containerEl.addClass("no-menu");
+		}
+	}
+
+	private applyInitialBoardWidth(width: string) {
+		const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
+		boardEl.style.width = width;
+	}
+
+	private applyCoordinates() {
+		const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
+		if (this.config.enableCoordinates === true) {
+			boardEl?.addClass('chesser-show-coords');
+		} else {
+			boardEl?.removeClass('chesser-show-coords');
 		}
 	}
 
@@ -183,25 +201,23 @@ export class ChessView extends MarkdownRenderChild {
 		}, true); // Use capture phase to catch clicks early
 	}
 
-	private applyInitialBoardWidth(width: string) {
-		const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
-		boardEl.style.width = width;
-	}
+	private syncChessground() {
+		this.cg.set({
+			check: this.chess.inCheck(),
+			turnColor: this.getTurnColor(),
+			movable: {
+				free: false,
+				color: this.getTurnColor(),
+				dests: this.getPossibleMoves(),
+			},
+		});
 
-	private applyCoordinates(enableCoordinates?: boolean) {
-		const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
-		if (enableCoordinates === true) {
-			boardEl?.addClass('chesser-show-coords');
-		} else {
-			boardEl?.removeClass('chesser-show-coords');
+		if (this.sidebar) {
+			this.sidebar.redrawMoveList();
 		}
 	}
 
-	public color_turn(): Color {
-		return this.chess.turn() === "w" ? "white" : "black";
-	}
-
-	public dests(): Map<Key, Key[]> {
+	public getPossibleMoves(): Map<Key, Key[]> {
 		const dests = new Map();
 		SQUARES.forEach((s) => {
 			const ms = this.chess.moves({ square: s, verbose: true });
@@ -214,40 +230,28 @@ export class ChessView extends MarkdownRenderChild {
 		return dests;
 	}
 
-	public check(): boolean {
-		return this.chess.inCheck();
-	}
-
-	public previousMove() {
-		this.update_turn_idx(this.currentMoveIdx - 1);
-	}
-
-	public nextMove() {
-		this.update_turn_idx(this.currentMoveIdx + 1);
-	}
-
-	public update_turn_idx(moveIdx: number): void {
-		if (moveIdx < -1 || moveIdx >= this.moves.length) {
+	public setMoveIndex(moveIndex: number): void {
+		if (moveIndex < -1 || moveIndex >= this.moves.length) {
 			return;
 		}
 
-		const isUndoing = moveIdx < this.currentMoveIdx;
+		const isUndoing = moveIndex < this.currentMoveIndex;
 		if (isUndoing) {
-			while (this.currentMoveIdx > moveIdx) {
-				this.currentMoveIdx--;
+			while (this.currentMoveIndex > moveIndex) {
+				this.currentMoveIndex--;
 				this.chess.undo();
 			}
 		} else {
-			while (this.currentMoveIdx < moveIdx) {
-				this.currentMoveIdx++;
-				const move = this.moves[this.currentMoveIdx];
+			while (this.currentMoveIndex < moveIndex) {
+				this.currentMoveIndex++;
+				const move = this.moves[this.currentMoveIndex];
 				this.chess.move(move);
 			}
 		}
 
 		let lastMove: [Key, Key] = undefined;
-		if (this.currentMoveIdx >= 0) {
-			const move = this.moves[this.currentMoveIdx];
+		if (this.currentMoveIndex >= 0) {
+			const move = this.moves[this.currentMoveIndex];
 			lastMove = [move.from, move.to];
 		}
 
@@ -255,6 +259,19 @@ export class ChessView extends MarkdownRenderChild {
 			fen: this.chess.fen(),
 			lastMove,
 		});
+		this.syncChessground();
+	}
+
+	public getTurnColor(): Color {
+		return this.chess.turn() === "w" ? "white" : "black";
+	}
+
+	public previousMove() {
+		this.setMoveIndex(this.currentMoveIndex - 1);
+	}
+
+	public nextMove() {
+		this.setMoveIndex(this.currentMoveIndex + 1);
 	}
 
 	public turn() {
@@ -277,29 +294,14 @@ export class ChessView extends MarkdownRenderChild {
 		return this.chess.fen();
 	}
 
-	public loadFen(fen: string, moves?: string[]): void {
-		let lastMove: [Key, Key] = undefined;
-		if (moves) {
-			this.currentMoveIdx = -1;
-			this.moves = [];
-			this.chess.reset();
-
-			moves.forEach((fullMove) => {
-				fullMove.split(" ").forEach((halfMove) => {
-					const move = this.chess.move(halfMove);
-					this.moves.push(move);
-					this.currentMoveIdx++;
-				});
-			});
-
-			if (this.currentMoveIdx >= 0) {
-				const move = this.moves[this.currentMoveIdx];
-				lastMove = [move.from, move.to];
-			}
-		} else {
-			this.chess.load(fen);
+	private presentError(errorMessage: string, printToConsole: boolean = false, showNotice: boolean = false) {
+		if(printToConsole) {
+			console.warn(errorMessage)
 		}
-
-		this.cg.set({ fen: this.chess.fen(), lastMove });
+		if(showNotice) {
+			new Notice(`[ChessPlugin] ${errorMessage}`);
+		}
+		const errorEl = this.containerEl.createDiv("chesser-error");
+		errorEl.textContent = `${errorMessage}`;
 	}
 }

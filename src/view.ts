@@ -126,9 +126,9 @@ export class ChessView extends MarkdownRenderChild {
 	private applyCoordinates() {
 		const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
 		if (this.config.enableCoordinates === true) {
-			boardEl?.addClass('chesser-show-coords');
+			boardEl?.addClass('chess-show-coords');
 		} else {
-			boardEl?.removeClass('chesser-show-coords');
+			boardEl?.removeClass('chess-show-coords');
 		}
 	}
 
@@ -261,7 +261,7 @@ export class ChessView extends MarkdownRenderChild {
 		if(showNotice) {
 			new Notice(`[ChessPlugin] ${errorMessage}`);
 		}
-		const errorEl = this.containerEl.createDiv("chesser-error");
+		const errorEl = this.containerEl.createDiv("chess-error");
 		errorEl.textContent = `${errorMessage}`;
 	}
 }

@@ -1,34 +1,34 @@
 import { BOARD_STYLES, PIECE_STYLES } from "./config";
-import ChesserPlugin from "./main";
+import ChessPlugin from "./main";
 
 import { App, PluginSettingTab, Setting } from "obsidian";
 
 export interface Settings {
-	orientation: string;
 	viewOnly: boolean;
-	drawable: boolean;
+	enableCoordinates: boolean;
 	pieceStyle: string;
 	boardStyle: string;
-	showSidebar: boolean;
 	boardWidth: string;
-	enableCoordinates: boolean;
+	orientation: string;
+	drawable: boolean;
+	showSidebar: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-	orientation: "white",
 	viewOnly: false,
-	drawable: true,
+	enableCoordinates: true,
 	pieceStyle: "cburnett",
 	boardStyle: "brown",
-	showSidebar: true,
 	boardWidth: "400px",
-	enableCoordinates: true,
+	orientation: "white",
+	drawable: true,
+	showSidebar: true,
 };
 
 export class ChessPluginSettingTab extends PluginSettingTab {
-	plugin: ChesserPlugin;
+	plugin: ChessPlugin;
 
-	constructor(app: App, plugin: ChesserPlugin) {
+	constructor(app: App, plugin: ChessPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

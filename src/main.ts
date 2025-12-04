@@ -26,7 +26,7 @@ export default class ChessPlugin extends Plugin {
 		
 		// MARK: Register Commands
 		this.addCommand({
-			id: "chesser-toggle-sidebar",
+			id: "chess-toggle-sidebar",
 			name: "Toggle Sidebar",
 			callback: () => {
 				// Only execute if the current active container is a Chess View
@@ -59,7 +59,7 @@ export default class ChessPlugin extends Plugin {
 			if(!config) {
 				const errorMessage = 'Could not parse user config.';
 				console.warn(`[ChessPlugin] ${errorMessage}`);
-				const errorEl = el.createDiv("chesser-error");
+				const errorEl = el.createDiv("chess-error");
 				errorEl.textContent = errorMessage;
 				return;
 			}

@@ -10,7 +10,6 @@ export interface Settings {
 	boardStyle: string;
 	boardWidth: string;
 	orientation: string;
-	drawable: boolean;
 	showSidebar: boolean;
 }
 
@@ -21,7 +20,6 @@ export const DEFAULT_SETTINGS: Settings = {
 	boardStyle: "brown",
 	boardWidth: "400px",
 	orientation: "white",
-	drawable: true,
 	showSidebar: true,
 };
 
@@ -108,16 +106,6 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 
 				dropdown.setValue(this.plugin.settings.orientation).onChange((orientation) => {
 					this.plugin.settings.orientation = orientation;
-					this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
-			.setName("Drawable")
-			.setDesc("Controls the ability to draw annotations (arrows, circles) on the board.")
-			.addToggle((toggle) => {
-				toggle.setValue(this.plugin.settings.drawable).onChange((drawable) => {
-					this.plugin.settings.drawable = drawable;
 					this.plugin.saveSettings();
 				});
 			});

@@ -90,7 +90,7 @@ export class ChessView extends MarkdownRenderChild {
 			orientation: this.config.orientation as Color,
 			viewOnly: this.config.viewOnly,
 			drawable: {
-				enabled: this.config.drawable
+				enabled: true
 			},
 			events: {
 				move: (orig: any, dest: any) => {

@@ -2,6 +2,19 @@
 
 A chess game viewer and editor for [Obsidian](https://obsidian.md/).
 
+## Features
+
+This plugin is a fork of the great [Chesser](https://github.com/SilentVoid13/Chesser) plugin but somewhat simplified and with the following features added:
+
+- PGN support
+- Keyboard shortcuts
+- Board resizibility
+- Toggle sidebar visibility
+- Chessboard coordinates
+- Better sidebar UI
+- Adjustable board width
+- `chess-pgn` and `chess-fen` codeblock syntax
+
 ## Usage
 
 Declare a `chess` code block like so:
@@ -21,9 +34,7 @@ The following configuration options are available:
 | `orientation` | `white`/`black`                                              | Orientation of the board.                                    |
 | `pieceStyle`  | A valid piece style name.<br />Check [this](https://github.com/dsynkd/obsidian-chess/tree/master/assets/piece-css) to view available styles. | Style of the pieces on the board.                            |
 | `boardStyle`  | A valid board style name.<br />Check [this](https://github.com/dsynkd/obsidian-chess/tree/master/assets/board-css) to view available styles. | Style of the chess board.                                    |
-| `drawable`    | `true`/`false`                                               | Controls the ability to draw annotations (arrows, circles) on the board. |
 | `viewOnly`    | `true`/`false`                                               | If enabled, displays a static chess board (no moves, annotations, ...). |
-| `free`        | `true`/`false`                                               | If enabled, disables the chess logic, all moves are valid.   |
 | `width`       | A CSS width value (e.g., `500px`, `50%`, `30em`)             | Sets the initial width of the chess board.                           |
 | `showSidebar`    | `true`/`false`                                               | If enabled, shows the side menu for this specific board.     |
 

@@ -50,6 +50,7 @@ export default class ChessPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		this.refreshActiveViews();
 	}
 
 	private drawChessboard(app: App, settings: Settings) {
@@ -85,5 +86,14 @@ export default class ChessPlugin extends Plugin {
 			}; 
 			ctx.addChild(new ChessView(el, ctx, config, app));
 		};
+	}
+
+	private refreshActiveViews() {
+		this.app.workspace.getLeavesOfType("markdown").forEach(leaf => {
+			const view = leaf.view as MarkdownView;
+			this.app.vault.read(view.file).then(content => {
+				view.setViewData(content, true);
+			});
+		});
 	}
 }

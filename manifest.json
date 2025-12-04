@@ -3,7 +3,7 @@
   "name": "Chess",
   "version": "0.2.1",
   "minAppVersion": "0.9.12",
-  "description": "A chess game viewer/editor",
+  "description": "A chess game viewer and editor",
   "author": "dsynkd",
   "authorUrl": "https://github.com/dsynkd",
   "isDesktopOnly": false

@@ -39,7 +39,27 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		// Chessboard Section
-		containerEl.createEl('h2', { text: 'Chessboard' });
+		containerEl.createEl('h3', { text: 'Chessboard' });
+
+		new Setting(containerEl)
+			.setName("View Only")
+			.setDesc("Display a static chess board, no interactions allowed.")
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.viewOnly).onChange((viewOnly) => {
+					this.plugin.settings.viewOnly = viewOnly;
+					this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName("Show Coordinates")
+			.setDesc("Displays rank (1-8) and file (a-h) labels on the chessboard.")
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.enableCoordinates).onChange((enableCoordinates) => {
+					this.plugin.settings.enableCoordinates = enableCoordinates;
+					this.plugin.saveSettings();
+				});
+			});
 
 		new Setting(containerEl)
 			.setName("Piece Style")
@@ -69,6 +89,7 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Initial Board Width")
+			.setDesc("Can use any acceptable CSS width value.")
 			.addText((text) => {
 				text.setValue(this.plugin.settings.boardWidth)
 					.onChange((value) => {
@@ -92,26 +113,6 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Show Coordinates")
-			.setDesc("Displays rank (1-8) and file (a-h) labels on the chessboard.")
-			.addToggle((toggle) => {
-				toggle.setValue(this.plugin.settings.enableCoordinates).onChange((enableCoordinates) => {
-					this.plugin.settings.enableCoordinates = enableCoordinates;
-					this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
-			.setName("View-only")
-			.setDesc("If enabled, displays a static chess board (no moves, annotations, ...).")
-			.addToggle((toggle) => {
-				toggle.setValue(this.plugin.settings.viewOnly).onChange((viewOnly) => {
-					this.plugin.settings.viewOnly = viewOnly;
-					this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(containerEl)
 			.setName("Drawable")
 			.setDesc("Controls the ability to draw annotations (arrows, circles) on the board.")
 			.addToggle((toggle) => {
@@ -121,7 +122,7 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 				});
 			});
 
-		containerEl.createEl('h2', { text: 'Sidebar' });
+		containerEl.createEl('h3', { text: 'Sidebar' });
 
 		new Setting(containerEl)
 			.setName("Show Sidebar")

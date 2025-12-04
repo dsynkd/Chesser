@@ -19,8 +19,8 @@ The following configuration options are available:
 | `fen`         | A valid FEN string                                           | Starts the chess board with a particular position.           |
 | `pgn`         | A valid PGN string formatted for YAML                        | Loads the chess board with the moves from a PGN game         |
 | `orientation` | `white`/`black`                                              | Orientation of the board.                                    |
-| `pieceStyle`  | A valid piece style name.<br />Check [this](https://github.com/SilentVoid13/Chesser/tree/master/assets/piece-css) to view available styles. | Style of the pieces on the board.                            |
-| `boardStyle`  | A valid board style name.<br />Check [this](https://github.com/SilentVoid13/Chesser/tree/master/assets/board-css) to view available styles. | Style of the chess board.                                    |
+| `pieceStyle`  | A valid piece style name.<br />Check [this](https://github.com/dsynkd/obsidian-chess/tree/master/assets/piece-css) to view available styles. | Style of the pieces on the board.                            |
+| `boardStyle`  | A valid board style name.<br />Check [this](https://github.com/dsynkd/obsidian-chess/tree/master/assets/board-css) to view available styles. | Style of the chess board.                                    |
 | `drawable`    | `true`/`false`                                               | Controls the ability to draw annotations (arrows, circles) on the board. |
 | `viewOnly`    | `true`/`false`                                               | If enabled, displays a static chess board (no moves, annotations, ...). |
 | `free`        | `true`/`false`                                               | If enabled, disables the chess logic, all moves are valid.   |
@@ -80,6 +80,12 @@ rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
 ```
 `````
 
+## Shortcuts
+
+When a chessboard is focused, you can use left and right arrow keys for Previous/Next move commands.
+
+You can also use a hotkey for toggling the sidebar.
+
 ## License
 
-[Obsidian Chess Plugin](https://github.com/dsynkd/obsidian-chess) is licensed under the GNU AGPLv3 license. Refer to [LICENSE](https://github.com/SilentVoid13/Chesser/blob/master/LICENSE.TXT) for more informations.
+[Obsidian Chess Plugin](https://github.com/dsynkd/obsidian-chess) is licensed under the GNU AGPLv3 license. Refer to [LICENSE](https://github.com/dsynkd/obsidian-chess/blob/master/LICENSE.TXT) for more informations.

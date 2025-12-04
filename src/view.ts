@@ -11,46 +11,7 @@ import { Color, Key } from "chessground/types";
 
 import { Config } from "./config";
 import Sidebar from "./sidebar";
-
-// To bundle all css files in styles.css with rollup
-import "../assets/custom.css";
-import "../node_modules/chessground/assets/chessground.base.css";
-import "../node_modules/chessground/assets/chessground.brown.css";
-// Piece styles
-import "../assets/piece-css/alpha.css";
-import "../assets/piece-css/california.css";
-import "../assets/piece-css/cardinal.css";
-import "../assets/piece-css/cburnett.css";
-import "../assets/piece-css/chess7.css";
-import "../assets/piece-css/chessnut.css";
-import "../assets/piece-css/companion.css";
-import "../assets/piece-css/dubrovny.css";
-import "../assets/piece-css/fantasy.css";
-import "../assets/piece-css/fresca.css";
-import "../assets/piece-css/gioco.css";
-import "../assets/piece-css/governor.css";
-import "../assets/piece-css/horsey.css";
-import "../assets/piece-css/icpieces.css";
-import "../assets/piece-css/kosal.css";
-import "../assets/piece-css/leipzig.css";
-import "../assets/piece-css/letter.css";
-import "../assets/piece-css/libra.css";
-import "../assets/piece-css/maestro.css";
-import "../assets/piece-css/merida.css";
-import "../assets/piece-css/pirouetti.css";
-import "../assets/piece-css/pixel.css";
-import "../assets/piece-css/reillycraig.css";
-import "../assets/piece-css/riohacha.css";
-import "../assets/piece-css/shapes.css";
-import "../assets/piece-css/spatial.css";
-import "../assets/piece-css/staunty.css";
-import "../assets/piece-css/tatiana.css";
-// Board styles
-import "../assets/board-css/brown.css";
-import "../assets/board-css/blue.css";
-import "../assets/board-css/green.css";
-import "../assets/board-css/purple.css";
-import "../assets/board-css/ic.css";
+import "./styles";
 
 export class ChessView extends MarkdownRenderChild {
 	private ctx: MarkdownPostProcessorContext;
@@ -78,24 +39,15 @@ export class ChessView extends MarkdownRenderChild {
 		
 		if(!this.loadMoveList()) { return }
 
-		this.moves = this.chess.history({ verbose: true });
-		this.currentMoveIndex = config.currentMoveIndex ?? this.moves.length - 1;
-
-		let lastMove: [Key, Key] = undefined;
-		if (this.currentMoveIndex >= 0) {
-			const move = this.moves[this.currentMoveIndex];
-			lastMove = [move.from, move.to];
-		}
-
-		this.applyStyles();
-		this.setupChessground(lastMove);
+		this.setupChessground();
 		this.applyCoordinates();
-		this.applyInitialBoardWidth(config.boardWidth);
+		this.applyStyles();
+		this.applyInitialBoardWidth();
 		this.setupSidebar()
 		this.setupKeyboardShortcuts();
 	}
 
-	private loadMoveList() {
+	public loadMoveList() {
 		if (this.config.pgn && this.config.fen) {
 			this.presentError("Both FEN and PGN detected.");
 			return false;
@@ -120,10 +72,18 @@ export class ChessView extends MarkdownRenderChild {
 			this.presentError("No FEN or PGN found.");
 			return false;
 		}
+
+		this.moves = this.chess.history({ verbose: true });
+		this.currentMoveIndex = this.config.currentMoveIndex ?? this.moves.length - 1;
 		return true;
 	}
 
-	private setupChessground(lastMove: [Key, Key]) {
+	private setupChessground() {
+		let lastMove: [Key, Key] = undefined;
+		if (this.currentMoveIndex >= 0) {
+			const move = this.moves[this.currentMoveIndex];
+			lastMove = [move.from, move.to];
+		}
 		this.cg = Chessground(this.containerEl.createDiv(), {
 			fen: this.chess.fen(),
 			lastMove,
@@ -137,7 +97,7 @@ export class ChessView extends MarkdownRenderChild {
 					const move = this.chess.move({ from: orig, to: dest });
 					this.currentMoveIndex++;
 					this.moves = [...this.moves.slice(0, this.currentMoveIndex), move];
-					this.syncChessground();
+					this.syncBoard();
 				},
 			}
 		});
@@ -158,9 +118,9 @@ export class ChessView extends MarkdownRenderChild {
 		}
 	}
 
-	private applyInitialBoardWidth(width: string) {
+	private applyInitialBoardWidth() {
 		const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
-		boardEl.style.width = width;
+		boardEl.style.width = this.config.boardWidth;
 	}
 
 	private applyCoordinates() {
@@ -201,7 +161,7 @@ export class ChessView extends MarkdownRenderChild {
 		}, true); // Use capture phase to catch clicks early
 	}
 
-	private syncChessground() {
+	private syncBoard() {
 		this.cg.set({
 			check: this.chess.inCheck(),
 			turnColor: this.getTurnColor(),
@@ -259,7 +219,7 @@ export class ChessView extends MarkdownRenderChild {
 			fen: this.chess.fen(),
 			lastMove,
 		});
-		this.syncChessground();
+		this.syncBoard();
 	}
 
 	public getTurnColor(): Color {

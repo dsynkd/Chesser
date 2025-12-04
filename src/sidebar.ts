@@ -62,9 +62,8 @@ export default class Sidebar {
 			
 			btn.addEventListener("click", (e: MouseEvent) => {
 				e.preventDefault();
-				while (this.view.currentMoveIndex >= 0) {
-					this.view.previousMove();
-				}
+				this.view.loadMoveList();
+				this.view.setMoveIndex(-1);
 			});
 		});
 	}

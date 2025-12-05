@@ -57,7 +57,7 @@ export default class ChessPlugin extends Plugin {
 		return (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
 			const config = parseUserConfig(settings, source);
 			if(!config) {
-				presentError(el, "Could not parse user config.", true);
+				presentError(el, "Could not parse user config.");
 				return;
 			}
 			ctx.addChild(new ChessView(el, ctx, config, app));
@@ -107,6 +107,9 @@ export function presentError(
 	if(showNotice) {
 		new Notice(`[ChessPlugin] ${errorMessage}`);
 	}
-	const errorEl = this.containerEl.createDiv("chess-error");
+	if(!containerEl) {
+		return;
+	}
+	const errorEl = containerEl.createDiv("chess-error");
 	errorEl.textContent = `${errorMessage}`;
 }

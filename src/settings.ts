@@ -8,7 +8,6 @@ export interface Settings {
 	enableCoordinates: boolean;
 	pieceStyle: string;
 	boardStyle: string;
-	boardWidth: string;
 	orientation: string;
 	showSidebar: boolean;
 	showAnnotations: boolean;
@@ -19,7 +18,6 @@ export const DEFAULT_SETTINGS: Settings = {
 	enableCoordinates: true,
 	pieceStyle: "cburnett",
 	boardStyle: "brown",
-	boardWidth: "400px",
 	orientation: "white",
 	showSidebar: true,
 	showAnnotations: true,
@@ -85,19 +83,6 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 					this.plugin.settings.boardStyle = boardStyle;
 					this.plugin.saveSettings();
 				});
-			});
-
-		new Setting(containerEl)
-			.setName("Initial Board Width")
-			.setDesc("Can use any acceptable CSS width value.")
-			.addText((text) => {
-				text.setValue(this.plugin.settings.boardWidth)
-					.onChange((value) => {
-						if (value.trim()) {
-							this.plugin.settings.boardWidth = value.trim();
-							this.plugin.saveSettings();
-						}
-					});
 			});
 
 		new Setting(containerEl)

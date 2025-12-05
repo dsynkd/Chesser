@@ -55,7 +55,6 @@ export class ChessView extends MarkdownRenderChild {
 		this.setupChessground();
 		this.applyCoordinates();
 		this.applyStyles();
-		this.applyInitialBoardWidth();
 		this.setupSidebar()
 		this.setupKeyboardShortcuts();
 	}
@@ -155,11 +154,6 @@ export class ChessView extends MarkdownRenderChild {
 		} else {
 			this.containerEl.addClass("no-menu");
 		}
-	}
-
-	private applyInitialBoardWidth() {
-		const boardEl = this.containerEl.querySelector('.cg-wrap') as HTMLElement;
-		boardEl.style.width = this.config.boardWidth;
 	}
 
 	private applyCoordinates() {

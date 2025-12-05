@@ -11,6 +11,7 @@ export interface Settings {
 	boardWidth: string;
 	orientation: string;
 	showSidebar: boolean;
+	showAnnotations: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -21,6 +22,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	boardWidth: "400px",
 	orientation: "white",
 	showSidebar: true,
+	showAnnotations: true,
 };
 
 export class ChessPluginSettingTab extends PluginSettingTab {
@@ -118,6 +120,18 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.showSidebar).onChange((showSidebar) => {
 					this.plugin.settings.showSidebar = showSidebar;
+					this.plugin.saveSettings();
+				});
+			});
+
+		containerEl.createEl('h3', { text: 'Annotations' });
+
+		new Setting(containerEl)
+			.setName("Show Annotations")
+			.setDesc("Displays move annotations (!!, !, ?!, ?, ??) on the board and in the move list.")
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.showAnnotations).onChange((showAnnotations) => {
+					this.plugin.settings.showAnnotations = showAnnotations;
 					this.plugin.saveSettings();
 				});
 			});

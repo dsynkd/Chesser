@@ -115,9 +115,18 @@ export default class Sidebar {
 				const moveText = moveEl.createSpan({
 					text: move.san,
 				});
+
+				moveEl.addEventListener("click", (ev) => {
+					ev.preventDefault();
+					this.view.setMoveIndex(idx);
+				});
+
+				if(this.view.shouldShowAnnotations() == false) {
+					return;
+				}
 				
-				 // Mate symbol is included in SAN
-				if (move.annotation && move.san.charAt(move.san.length-1) != '#') {
+				// Add move annotation
+				if (move.annotation && move.san.charAt(move.san.length-1) != '#') { // Mate symbol is included in SAN
 					// Create a safe class name from annotation
 					const annotationClass = getAnnotationClass(move.annotation);
 					const annotationEl = moveEl.createSpan({
@@ -127,10 +136,6 @@ export default class Sidebar {
 					annotationEl.setAttribute("title", getAnnotationTooltip(move.annotation));
 				}
 				
-				moveEl.addEventListener("click", (ev) => {
-					ev.preventDefault();
-					this.view.setMoveIndex(idx);
-				});
 			});
 		});
 	}

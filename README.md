@@ -37,6 +37,7 @@ The following configuration options are available:
 | `viewOnly`    | `true`/`false`                                               | If enabled, displays a static chess board (no moves, annotations, ...). |
 | `width`       | A CSS width value (e.g., `500px`, `50%`, `30em`)             | Sets the initial width of the chess board.                           |
 | `showSidebar`    | `true`/`false`                                               | If enabled, shows the side menu for this specific board.     |
+| `showAnnotations`    | `true`/`false`                                               | If enabled, displays icons for corresponding move annotations.     |
 
 PGN must be properly formatted as a multiline YAML string (pipe to indicate multiline and 2 or 4 spaces for indent):
 

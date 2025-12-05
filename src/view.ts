@@ -220,6 +220,10 @@ export class ChessView extends MarkdownRenderChild {
 	}
 
 	private updateBoardAnnotations() {
+		if (!this.config.showAnnotations) {
+			return;
+		}
+
 		const boardEl = this.containerEl.querySelector('.cg-wrap');
 		boardEl.querySelectorAll('.chess-annotation-icon').forEach(el => el.remove());
 
@@ -324,6 +328,10 @@ export class ChessView extends MarkdownRenderChild {
 
 	public getFen() {
 		return this.chess.fen();
+	}
+
+	public shouldShowAnnotations(): boolean {
+		return this.config.showAnnotations ?? true;
 	}
 
 	private presentError(errorMessage: string, printToConsole: boolean = false, showNotice: boolean = false) {

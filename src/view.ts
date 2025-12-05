@@ -9,6 +9,7 @@ import { Chessground } from "chessground";
 import { Api } from "chessground/api";
 import { Color, Key } from "chessground/types";
 
+import { presentError } from "./main";
 import { Config } from "./config";
 import { 
 	sanRegex,
@@ -92,7 +93,7 @@ export class ChessView extends MarkdownRenderChild {
 			this.moves = moves.map(move => ({ ...move, annotation: null } as AnnotatedMove));
 		}
 		
-		this.currentMoveIndex = this.config.currentMoveIndex ?? this.moves.length - 1;
+		this.currentMoveIndex = this.moves.length - 1;
 		return true;
 	}
 
@@ -137,6 +138,10 @@ export class ChessView extends MarkdownRenderChild {
 				},
 			}
 		});
+
+		if(this.config.currentMoveIndex != null) {
+			this.setMoveIndex(this.config.currentMoveIndex - 1);
+		}
 
 		setTimeout(() => { this.updateBoardAnnotations() }, 50);
 	}
@@ -328,14 +333,7 @@ export class ChessView extends MarkdownRenderChild {
 		return this.config.showAnnotations ?? true;
 	}
 
-	private presentError(errorMessage: string, printToConsole: boolean = false, showNotice: boolean = false) {
-		if(printToConsole) {
-			console.warn(errorMessage)
-		}
-		if(showNotice) {
-			new Notice(`[ChessPlugin] ${errorMessage}`);
-		}
-		const errorEl = this.containerEl.createDiv("chess-error");
-		errorEl.textContent = `${errorMessage}`;
+	private presentError(errorMessage: string) {
+		presentError(this.containerEl, errorMessage);
 	}
 }

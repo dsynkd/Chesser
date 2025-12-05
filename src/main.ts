@@ -1,4 +1,4 @@
-import { App, MarkdownPostProcessorContext, MarkdownView, Plugin } from "obsidian";
+import { App, MarkdownPostProcessorContext, MarkdownView, Notice, Plugin } from "obsidian";
 import { ChessView } from "./view";
 import { Settings, ChessPluginSettingTab, DEFAULT_SETTINGS } from "./settings";
 import { Config, parseUserConfig } from "./config";
@@ -57,10 +57,7 @@ export default class ChessPlugin extends Plugin {
 		return (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
 			const config = parseUserConfig(settings, source);
 			if(!config) {
-				const errorMessage = 'Could not parse user config.';
-				console.warn(`[ChessPlugin] ${errorMessage}`);
-				const errorEl = el.createDiv("chess-error");
-				errorEl.textContent = errorMessage;
+				presentError(el, "Could not parse user config.", true);
 				return;
 			}
 			ctx.addChild(new ChessView(el, ctx, config, app));
@@ -96,4 +93,20 @@ export default class ChessPlugin extends Plugin {
 			});
 		});
 	}
+}
+
+export function presentError(
+	containerEl: HTMLElement,
+	errorMessage: string,
+	printToConsole: boolean = false,
+	showNotice: boolean = false
+) {
+	if(printToConsole) {
+		console.warn(`[ChessPlugin] ${errorMessage}`)
+	}
+	if(showNotice) {
+		new Notice(`[ChessPlugin] ${errorMessage}`);
+	}
+	const errorEl = this.containerEl.createDiv("chess-error");
+	errorEl.textContent = `${errorMessage}`;
 }

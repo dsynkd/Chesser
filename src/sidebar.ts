@@ -116,7 +116,8 @@ export default class Sidebar {
 					text: move.san,
 				});
 				
-				if (move.annotation) {
+				 // Mate symbol is included in SAN
+				if (move.annotation && move.san.charAt(move.san.length-1) != '#') {
 					// Create a safe class name from annotation
 					const annotationClass = getAnnotationClass(move.annotation);
 					const annotationEl = moveEl.createSpan({

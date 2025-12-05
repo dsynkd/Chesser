@@ -11,6 +11,8 @@ import { Color, Key } from "chessground/types";
 
 import { Config } from "./config";
 import { 
+	sanRegex,
+	annotationRegex,
 	MoveAnnotation,
 	getAnnotationIcon,
 	getAnnotationClass,
@@ -96,12 +98,10 @@ export class ChessView extends MarkdownRenderChild {
 	}
 
 	private parseAnnotations(moves: Move[], pgn: string): AnnotatedMove[] {
-		const sanRegex = /([BRQNK][a-h][1-8]|[BRQNK][a-h]x[a-h][1-8]|[BRQNK][a-h][1-8]x[a-h][1-8]|[BRQNK][a-h][1-8][a-h][1-8]|[BRQNK][a-h][a-h][1-8]|[BRQNK]x[a-h][1-8]|[a-h]x[a-h][1-8]=(B+R+Q+N)|[a-h]x[a-h][1-8]|[a-h][1-8]x[a-h][1-8]=(B+R+Q+N)|[a-h][1-8]x[a-h][1-8]|[a-h][1-8][a-h][1-8]=(B+R+Q+N)|[a-h][1-8][a-h][1-8]|[a-h][1-8]=(B+R+Q+N)|[a-h][1-8]|[BRQNK][1-8]x[a-h][1-8]|[BRQNK][1-8][a-h][1-8]|O-O|O-O-O)\+?/g
-		const annotationRegex = /(\?\?|\?\!|!!|!|\?)/;
-
 		const matches = pgn.matchAll(sanRegex)
 		const matchesArray = [...matches]
-		let moveAnnotations = Array(matchesArray.length).fill(null)
+		const moveAnnotations = Array(matchesArray.length).fill(null)
+		
 		matchesArray.forEach((match, index) => {
 			const annotationIndex = match.index + match[0].length
 			const annotationMatch = pgn.slice(annotationIndex, annotationIndex+2).match(annotationRegex);
@@ -109,6 +109,7 @@ export class ChessView extends MarkdownRenderChild {
 				moveAnnotations[index] = annotationMatch[0]
 			}
 		});
+
 		return moves.map((move, index) => {
 			return { ...move, annotation: moveAnnotations[index] } as AnnotatedMove;
 		});
@@ -137,6 +138,8 @@ export class ChessView extends MarkdownRenderChild {
 				},
 			}
 		});
+
+		setTimeout(() => { this.updateBoardAnnotations() }, 50);
 	}
 
 	private applyStyles() {
@@ -208,7 +211,8 @@ export class ChessView extends MarkdownRenderChild {
 			},
 		});
 
-		this.updateBoardAnnotations();
+		// Give time for board to render
+		setTimeout(() => { this.updateBoardAnnotations() }, 50);
 
 		if (this.sidebar) {
 			this.sidebar.redrawMoveList();
@@ -217,7 +221,7 @@ export class ChessView extends MarkdownRenderChild {
 
 	private updateBoardAnnotations() {
 		const boardEl = this.containerEl.querySelector('.cg-wrap');
-		boardEl.querySelectorAll('.move-annotation').forEach(el => el.remove());
+		boardEl.querySelectorAll('.chess-annotation-icon').forEach(el => el.remove());
 
 		if (this.currentMoveIndex >= 0 && this.currentMoveIndex < this.moves.length) {
 			const move = this.moves[this.currentMoveIndex];
@@ -231,7 +235,10 @@ export class ChessView extends MarkdownRenderChild {
 		const icon = getAnnotationIcon(annotation);
 		const tooltip = getAnnotationTooltip(annotation);
 		const boardEl = this.containerEl.querySelector('.cg-wrap');
-		const squareEl = boardEl.querySelector(`square.last-move:first-child`) as HTMLElement;
+		let squareEl = boardEl.querySelector(`square.last-move:first-child`) as HTMLElement;
+		if(!squareEl) { // Edge case when there is a check
+			squareEl = boardEl.querySelector(`square.last-move:nth-child(2)`) as HTMLElement;
+		}
 		const iconEl = document.createElement('img');
 
 		iconEl.className = `chess-annotation-icon`;

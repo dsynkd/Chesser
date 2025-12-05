@@ -14,3 +14,4 @@ RESOURCES.md
 .direnv
 .envrc
 out/
+.DS_Store

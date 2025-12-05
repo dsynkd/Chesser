@@ -58,6 +58,16 @@ div.cg-wrap {
 	&.chess-show-coords coords {
 		opacity: 1;
 	}
+
+	& .chess-annotation-icon {
+		position: absolute;
+		top: -8px;
+		right: -8px;
+		width: 18px;
+		height: 18px;
+		z-index: 10;
+		border-radius: 20px;
+	}
 }
 
 .chess-sidebar {
@@ -134,8 +144,6 @@ div.cg-wrap {
 	white-space: pre-wrap;
 	word-break: break-word;
 }
-
-/* Accessory class for centering the board on no-menu view */
 
 .center-board div.cg-wrap {
 	margin: 0 auto;

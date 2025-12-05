@@ -10,8 +10,19 @@ import { Api } from "chessground/api";
 import { Color, Key } from "chessground/types";
 
 import { Config } from "./config";
+import { 
+	MoveAnnotation,
+	getAnnotationIcon,
+	getAnnotationClass,
+	getAnnotationTooltip,
+} from "./annotations";
 import Sidebar from "./sidebar";
 import "./styles";
+
+
+export type AnnotatedMove = Move & {
+	annotation?: MoveAnnotation;
+};
 
 export class ChessView extends MarkdownRenderChild {
 	private ctx: MarkdownPostProcessorContext;
@@ -19,7 +30,7 @@ export class ChessView extends MarkdownRenderChild {
 	private cg: Api;
 	private chess: Chess;
 	private sidebar: Sidebar;
-	private moves: Move[];
+	private moves: AnnotatedMove[];
 	private config: Config;
 
 	public currentMoveIndex: number;
@@ -73,9 +84,34 @@ export class ChessView extends MarkdownRenderChild {
 			return false;
 		}
 
-		this.moves = this.chess.history({ verbose: true });
+		const moves = this.chess.history({ verbose: true });
+		if (this.config.pgn) {
+			this.moves = this.parseAnnotations(moves, this.config.pgn);
+		} else {
+			this.moves = moves.map(move => ({ ...move, annotation: null } as AnnotatedMove));
+		}
+		
 		this.currentMoveIndex = this.config.currentMoveIndex ?? this.moves.length - 1;
 		return true;
+	}
+
+	private parseAnnotations(moves: Move[], pgn: string): AnnotatedMove[] {
+		const sanRegex = /([BRQNK][a-h][1-8]|[BRQNK][a-h]x[a-h][1-8]|[BRQNK][a-h][1-8]x[a-h][1-8]|[BRQNK][a-h][1-8][a-h][1-8]|[BRQNK][a-h][a-h][1-8]|[BRQNK]x[a-h][1-8]|[a-h]x[a-h][1-8]=(B+R+Q+N)|[a-h]x[a-h][1-8]|[a-h][1-8]x[a-h][1-8]=(B+R+Q+N)|[a-h][1-8]x[a-h][1-8]|[a-h][1-8][a-h][1-8]=(B+R+Q+N)|[a-h][1-8][a-h][1-8]|[a-h][1-8]=(B+R+Q+N)|[a-h][1-8]|[BRQNK][1-8]x[a-h][1-8]|[BRQNK][1-8][a-h][1-8]|O-O|O-O-O)\+?/g
+		const annotationRegex = /(\?\?|\?\!|!!|!|\?)/;
+
+		const matches = pgn.matchAll(sanRegex)
+		const matchesArray = [...matches]
+		let moveAnnotations = Array(matchesArray.length).fill(null)
+		matchesArray.forEach((match, index) => {
+			const annotationIndex = match.index + match[0].length
+			const annotationMatch = pgn.slice(annotationIndex, annotationIndex+2).match(annotationRegex);
+			if(annotationMatch) {
+				moveAnnotations[index] = annotationMatch[0]
+			}
+		});
+		return moves.map((move, index) => {
+			return { ...move, annotation: moveAnnotations[index] } as AnnotatedMove;
+		});
 	}
 
 	private setupChessground() {
@@ -96,7 +132,7 @@ export class ChessView extends MarkdownRenderChild {
 				move: (orig: any, dest: any) => {
 					const move = this.chess.move({ from: orig, to: dest });
 					this.currentMoveIndex++;
-					this.moves = [...this.moves.slice(0, this.currentMoveIndex), move];
+					this.moves = [...this.moves.slice(0, this.currentMoveIndex), { ...move, annotation: null as MoveAnnotation } as AnnotatedMove];
 					this.syncBoard();
 				},
 			}
@@ -172,9 +208,37 @@ export class ChessView extends MarkdownRenderChild {
 			},
 		});
 
+		this.updateBoardAnnotations();
+
 		if (this.sidebar) {
 			this.sidebar.redrawMoveList();
 		}
+	}
+
+	private updateBoardAnnotations() {
+		const boardEl = this.containerEl.querySelector('.cg-wrap');
+		boardEl.querySelectorAll('.move-annotation').forEach(el => el.remove());
+
+		if (this.currentMoveIndex >= 0 && this.currentMoveIndex < this.moves.length) {
+			const move = this.moves[this.currentMoveIndex];
+			if (move.annotation) {
+				this.addAnnotationIcon(move.to, move.annotation);
+			}
+		}
+	}
+
+	private addAnnotationIcon(square: Key, annotation: MoveAnnotation) {
+		const icon = getAnnotationIcon(annotation);
+		const tooltip = getAnnotationTooltip(annotation);
+		const boardEl = this.containerEl.querySelector('.cg-wrap');
+		const squareEl = boardEl.querySelector(`square.last-move:first-child`) as HTMLElement;
+		const iconEl = document.createElement('img');
+
+		iconEl.className = `chess-annotation-icon`;
+		iconEl.setAttribute('title', tooltip);
+		iconEl.setAttribute('alt', tooltip);
+		iconEl.setAttribute('src', icon);
+		squareEl.appendChild(iconEl);
 	}
 
 	public getPossibleMoves(): Map<Key, Key[]> {
@@ -219,6 +283,7 @@ export class ChessView extends MarkdownRenderChild {
 			fen: this.chess.fen(),
 			lastMove,
 		});
+		
 		this.syncBoard();
 	}
 

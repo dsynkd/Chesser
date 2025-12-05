@@ -1,5 +1,9 @@
 import { setIcon, Setting } from "obsidian";
-import { ChessView } from "./view";
+import { ChessView, AnnotatedMove } from "./view";
+import { 
+	getAnnotationClass,
+	getAnnotationTooltip,
+} from "./annotations";
 
 export default class Sidebar {
 	private view: ChessView;
@@ -106,8 +110,22 @@ export default class Sidebar {
 					cls: `chess-move ${
 						this.view.currentMoveIndex === idx ? "chess-move-active" : ""
 					}`,
+				});
+				// Create move text element
+				const moveText = moveEl.createSpan({
 					text: move.san,
 				});
+				
+				if (move.annotation) {
+					// Create a safe class name from annotation
+					const annotationClass = getAnnotationClass(move.annotation);
+					const annotationEl = moveEl.createSpan({
+						cls: `chess-move-annotation chess-move-annotation-${annotationClass}`,
+						text: move.annotation,
+					});
+					annotationEl.setAttribute("title", getAnnotationTooltip(move.annotation));
+				}
+				
 				moveEl.addEventListener("click", (ev) => {
 					ev.preventDefault();
 					this.view.setMoveIndex(idx);

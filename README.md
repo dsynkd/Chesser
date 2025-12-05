@@ -7,13 +7,13 @@ A chess game viewer and editor for [Obsidian](https://obsidian.md/).
 This plugin is a fork of the great [Chesser](https://github.com/SilentVoid13/Chesser) plugin but somewhat simplified and with the following features added:
 
 - PGN support
+- Move annotation support
 - Keyboard shortcuts
+- `chess-pgn` and `chess-fen` codeblock syntax
 - Board resizibility
 - Toggle sidebar visibility
 - Chessboard coordinates
 - Better sidebar UI
-- Adjustable board width
-- `chess-pgn` and `chess-fen` codeblock syntax
 
 ## Usage
 
@@ -31,11 +31,10 @@ The following configuration options are available:
 | ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | `fen`         | A valid FEN string                                           | Starts the chess board with a particular position.           |
 | `pgn`         | A valid PGN string formatted for YAML                        | Loads the chess board with the moves from a PGN game         |
-| `orientation` | `white`/`black`                                              | Orientation of the board.                                    |
+| `viewOnly`    | `true`/`false`                                               | If enabled, displays a static chess board (no moves, annotations, ...). |
 | `pieceStyle`  | A valid piece style name.<br />Check [this](https://github.com/dsynkd/obsidian-chess/tree/master/assets/piece-css) to view available styles. | Style of the pieces on the board.                            |
 | `boardStyle`  | A valid board style name.<br />Check [this](https://github.com/dsynkd/obsidian-chess/tree/master/assets/board-css) to view available styles. | Style of the chess board.                                    |
-| `viewOnly`    | `true`/`false`                                               | If enabled, displays a static chess board (no moves, annotations, ...). |
-| `width`       | A CSS width value (e.g., `500px`, `50%`, `30em`)             | Sets the initial width of the chess board.                           |
+| `orientation` | `white`/`black`                                              | Orientation of the board.                                    |
 | `showSidebar`    | `true`/`false`                                               | If enabled, shows the side menu for this specific board.     |
 | `showAnnotations`    | `true`/`false`                                               | If enabled, displays icons for corresponding move annotations.     |
 
@@ -97,6 +96,19 @@ rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
 When a chessboard is focused, you can use left and right arrow keys for Previous/Next move commands.
 
 You can also use a hotkey for toggling the sidebar, which is configurable in the Obsidian hotkeys for this plugin.
+
+## Accessories
+
+This plugin comes with a few CSS classes you can use in your snippets to further customize the style.
+
+Move annotations in the sidebar have the following CSS classes:
+
+- `chess-move-annotation-brilliant`
+- `chess-move-annotation-great`
+- `chess-move-annotation-mistake`
+- `chess-move-annotation-inaccuracy`
+- `chess-move-annotation-blunder`
+- `chess-move-annotation-checkmate`
 
 ## License
 

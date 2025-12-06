@@ -1,17 +1,17 @@
-import { BOARD_STYLES, PIECE_STYLES } from "./config";
-import ChessPlugin from "./main";
+import { BOARD_STYLES, PIECE_STYLES } from "./config"
+import { ChessPlugin } from "./main"
 
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian"
 
 export interface Settings {
-	viewOnly: boolean;
-	enableCoordinates: boolean;
-	pieceStyle: string;
-	boardStyle: string;
-	orientation: string;
-	showSidebar: boolean;
-	centerBoard: boolean;
-	showAnnotations: boolean;
+	viewOnly: boolean
+	enableCoordinates: boolean
+	pieceStyle: string
+	boardStyle: string
+	orientation: string
+	showSidebar: boolean
+	centerBoard: boolean
+	showAnnotations: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -23,114 +23,114 @@ export const DEFAULT_SETTINGS: Settings = {
 	showSidebar: true,
 	centerBoard: false,
 	showAnnotations: true,
-};
+}
 
 export class ChessPluginSettingTab extends PluginSettingTab {
-	plugin: ChessPlugin;
+	plugin: ChessPlugin
 
 	constructor(app: App, plugin: ChessPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
+		super(app, plugin)
+		this.plugin = plugin
 	}
 
 	display(): void {
-		let { containerEl } = this;
+		let { containerEl } = this
 
-		containerEl.empty();
+		containerEl.empty()
 
 		// Chessboard Section
-		containerEl.createEl('h3', { text: 'Chessboard' });
+		containerEl.createEl('h3', { text: 'Chessboard' })
 
 		new Setting(containerEl)
 			.setName("View Only")
 			.setDesc("Display a static chess board, no interactions allowed.")
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.viewOnly).onChange((viewOnly) => {
-					this.plugin.settings.viewOnly = viewOnly;
-					this.plugin.saveSettings();
-				});
-			});
+					this.plugin.settings.viewOnly = viewOnly
+					this.plugin.saveSettings()
+				})
+			})
 
 		new Setting(containerEl)
 			.setName("Show Coordinates")
 			.setDesc("Displays rank (1-8) and file (a-h) labels on the chessboard.")
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.enableCoordinates).onChange((enableCoordinates) => {
-					this.plugin.settings.enableCoordinates = enableCoordinates;
-					this.plugin.saveSettings();
-				});
-			});
+					this.plugin.settings.enableCoordinates = enableCoordinates
+					this.plugin.saveSettings()
+				})
+			})
 
 		new Setting(containerEl)
 			.setName("Piece Style")
 			.addDropdown((dropdown) => {
-				let styles: Record<string, string> = {};
-				PIECE_STYLES.map((style) => (styles[style] = style));
-				dropdown.addOptions(styles);
+				let styles: Record<string, string> = {}
+				PIECE_STYLES.map((style) => (styles[style] = style))
+				dropdown.addOptions(styles)
 
 				dropdown.setValue(this.plugin.settings.pieceStyle).onChange((pieceStyle) => {
-					this.plugin.settings.pieceStyle = pieceStyle;
-					this.plugin.saveSettings();
-				});
-			});
+					this.plugin.settings.pieceStyle = pieceStyle
+					this.plugin.saveSettings()
+				})
+			})
 
 		new Setting(containerEl)
 			.setName("Board Style")
 			.addDropdown((dropdown) => {
-				let styles: Record<string, string> = {};
-				BOARD_STYLES.map((style) => (styles[style] = style));
-				dropdown.addOptions(styles);
+				let styles: Record<string, string> = {}
+				BOARD_STYLES.map((style) => (styles[style] = style))
+				dropdown.addOptions(styles)
 
 				dropdown.setValue(this.plugin.settings.boardStyle).onChange((boardStyle) => {
-					this.plugin.settings.boardStyle = boardStyle;
-					this.plugin.saveSettings();
-				});
-			});
+					this.plugin.settings.boardStyle = boardStyle
+					this.plugin.saveSettings()
+				})
+			})
 
 		new Setting(containerEl)
 			.setName("Default Orientation")
 			.addDropdown((dropdown) => {
-				dropdown.addOption("white", "White");
-				dropdown.addOption("black", "Black");
+				dropdown.addOption("white", "White")
+				dropdown.addOption("black", "Black")
 
 				dropdown.setValue(this.plugin.settings.orientation).onChange((orientation) => {
-					this.plugin.settings.orientation = orientation;
-					this.plugin.saveSettings();
-				});
-			});
+					this.plugin.settings.orientation = orientation
+					this.plugin.saveSettings()
+				})
+			})
 
-		containerEl.createEl('h3', { text: 'Sidebar' });
+		containerEl.createEl('h3', { text: 'Sidebar' })
 
 		new Setting(containerEl)
 			.setName("Show Sidebar")
 			.setDesc("Displays a sidebar containing move history and controls.")
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.showSidebar).onChange((showSidebar) => {
-					this.plugin.settings.showSidebar = showSidebar;
-					this.plugin.saveSettings();
-				});
-			});
+					this.plugin.settings.showSidebar = showSidebar
+					this.plugin.saveSettings()
+				})
+			})
 
 		new Setting(containerEl)
 		.setName("Center Chessboard")
 		.setDesc("Cemter the board when the sidebar is hidden.")
 		.addToggle((toggle) => {
 			toggle.setValue(this.plugin.settings.centerBoard).onChange((centerBoard) => {
-				this.plugin.settings.centerBoard = centerBoard;
-				this.plugin.saveSettings();
-			});
-		});
+				this.plugin.settings.centerBoard = centerBoard
+				this.plugin.saveSettings()
+			})
+		})
 
-		containerEl.createEl('h3', { text: 'Annotations' });
+		containerEl.createEl('h3', { text: 'Annotations' })
 
 		new Setting(containerEl)
 			.setName("Show Annotations")
 			.setDesc("Displays move annotations (!!, !, ?!, ?, ??) on the board and in the move list.")
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.showAnnotations).onChange((showAnnotations) => {
-					this.plugin.settings.showAnnotations = showAnnotations;
-					this.plugin.saveSettings();
-				});
-			});
+					this.plugin.settings.showAnnotations = showAnnotations
+					this.plugin.saveSettings()
+				})
+			})
 	}
 }

@@ -1,28 +1,28 @@
-import { App, MarkdownPostProcessorContext, MarkdownView, Notice, Plugin } from "obsidian";
-import { ChessView } from "./view";
-import { Settings, ChessPluginSettingTab, DEFAULT_SETTINGS } from "./settings";
-import { Config, parseUserConfig } from "./config";
+import { App, MarkdownPostProcessorContext, MarkdownView, Notice, Plugin } from "obsidian"
+import { ChessView } from "./view"
+import { Settings, ChessPluginSettingTab, DEFAULT_SETTINGS } from "./settings"
+import { Config, parseUserConfig } from "./config"
 
-export default class ChessPlugin extends Plugin {
-	settings: Settings;
+export class ChessPlugin extends Plugin {
+	settings: Settings
 
 	async onload() {
-		await this.loadSettings();
-		this.addSettingTab(new ChessPluginSettingTab(this.app, this));
+		await this.loadSettings()
+		this.addSettingTab(new ChessPluginSettingTab(this.app, this))
 
 		// MARK: Register Codeblock Processors
 		this.registerMarkdownCodeBlockProcessor(
 			"chess",
 			this.drawChessboard(this.app, this.settings)
-		);
+		)
 		this.registerMarkdownCodeBlockProcessor(
 			"chess-pgn",
 			this.drawPGNChessboard(this.app, this.settings)
-		);
+		)
 		this.registerMarkdownCodeBlockProcessor(
 			"chess-fen",
 			this.drawFENChessboard(this.app, this.settings)
-		);
+		)
 		
 		// MARK: Register Commands
 		this.addCommand({
@@ -35,33 +35,33 @@ export default class ChessPlugin extends Plugin {
 				}
 
 				if(document.activeElement.hasClass('no-menu')) {
-					document.activeElement.removeClass('no-menu');
+					document.activeElement.removeClass('no-menu')
 				} else {
-					document.activeElement.addClass('no-menu');
+					document.activeElement.addClass('no-menu')
 				}
 			},
 			hotkeys: []
-		});
+		})
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
 	}
 
 	async saveSettings() {
-		await this.saveData(this.settings);
-		this.refreshActiveViews();
+		await this.saveData(this.settings)
+		this.refreshActiveViews()
 	}
 
 	private drawChessboard(app: App, settings: Settings) {
 		return (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-			const config = parseUserConfig(settings, source);
+			const config = parseUserConfig(settings, source)
 			if(!config) {
-				presentError(el, "Could not parse user config.");
-				return;
+				presentError(el, "Could not parse user config.")
+				return
 			}
-			ctx.addChild(new ChessView(el, ctx, config, app));
-		};
+			ctx.addChild(new ChessView(el, ctx, config, app))
+		}
 	}
 
 	private drawPGNChessboard(app: App, settings: Settings) {
@@ -70,9 +70,9 @@ export default class ChessPlugin extends Plugin {
 				...settings,
 				fen: "",
 				pgn: source.trim(),
-			}; 
-			ctx.addChild(new ChessView(el, ctx, config, app));
-		};
+			} 
+			ctx.addChild(new ChessView(el, ctx, config, app))
+		}
 	}
 
 	private drawFENChessboard(app: App, settings: Settings) {
@@ -80,18 +80,18 @@ export default class ChessPlugin extends Plugin {
 			let config: Config = {
 				...settings,
 				fen: source.trim()
-			}; 
-			ctx.addChild(new ChessView(el, ctx, config, app));
-		};
+			} 
+			ctx.addChild(new ChessView(el, ctx, config, app))
+		}
 	}
 
 	private refreshActiveViews() {
 		this.app.workspace.getLeavesOfType("markdown").forEach(leaf => {
-			const view = leaf.view as MarkdownView;
+			const view = leaf.view as MarkdownView
 			this.app.vault.read(view.file).then(content => {
-				view.setViewData(content, true);
-			});
-		});
+				view.setViewData(content, true)
+			})
+		})
 	}
 }
 
@@ -105,11 +105,11 @@ export function presentError(
 		console.warn(`[ChessPlugin] ${errorMessage}`)
 	}
 	if(showNotice) {
-		new Notice(`[ChessPlugin] ${errorMessage}`);
+		new Notice(`[ChessPlugin] ${errorMessage}`)
 	}
 	if(!containerEl) {
-		return;
+		return
 	}
-	const errorEl = containerEl.createDiv("chess-error");
-	errorEl.textContent = `${errorMessage}`;
+	const errorEl = containerEl.createDiv("chess-error")
+	errorEl.textContent = `${errorMessage}`
 }

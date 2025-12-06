@@ -1,16 +1,16 @@
-import { parseYaml } from "obsidian";
-import { Settings } from "./settings";
+import { parseYaml } from "obsidian"
+import { Settings } from "./settings"
 
 export interface Config extends Settings {
-	id?: string;
-	fen: string;
-	pgn?: string;
-	startingMoveIndex?: number;
-	centerBoard: boolean;
-	moves?: string[];
+	id?: string
+	fen: string
+	pgn?: string
+	startingMoveIndex?: number
+	centerBoard: boolean
+	moves?: string[]
 }
 
-const ORIENTATIONS = ["white", "black"];
+const ORIENTATIONS = ["white", "black"]
 export const PIECE_STYLES = [
 	"alpha",
 	"california",
@@ -40,7 +40,7 @@ export const PIECE_STYLES = [
 	"spatial",
 	"staunty",
 	"tatiana",
-];
+]
 
 export const BOARD_STYLES = [
 	"blue",
@@ -48,7 +48,7 @@ export const BOARD_STYLES = [
 	"green",
 	"ic",
 	"purple"
-];
+]
 
 export function parseUserConfig(
 	settings: Settings,
@@ -58,8 +58,8 @@ export function parseUserConfig(
 		return {
 			...settings,
 			...parseYaml(content),
-		};
+		}
 	} catch (e) { // Will get handled at drawChessboard
-		return null;
+		return null
 	}
 }

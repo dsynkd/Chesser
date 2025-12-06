@@ -139,8 +139,8 @@ export class ChessView extends MarkdownRenderChild {
 			}
 		});
 
-		if(this.config.currentMoveIndex != null) {
-			this.setMoveIndex(this.config.currentMoveIndex - 1);
+		if(this.config.startingMoveIndex != null) {
+			this.setMoveIndex(this.config.startingMoveIndex - 1);
 		}
 
 		setTimeout(() => { this.updateBoardAnnotations() }, 50);

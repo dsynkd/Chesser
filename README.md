@@ -37,7 +37,7 @@ The following configuration options are available:
 | `orientation` | `white`/`black`                                              | Orientation of the board.                                    |
 | `showSidebar`    | `true`/`false`                                               | If enabled, shows the side menu for this specific board.     |
 | `showAnnotations`    | `true`/`false`                                               | If enabled, displays icons for corresponding move annotations.     |
-| `currentMoveIndex`    | Non-negative integer                                               | The index of the move the board should start on initial render.     |
+| `startingMoveIndex`    | Non-negative integer                                               | The index of the move the board should start on initial render.     |
 
 PGN must be properly formatted as a multiline YAML string (pipe to indicate multiline and 2 or 4 spaces for indent):
 

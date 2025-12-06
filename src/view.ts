@@ -238,10 +238,7 @@ export class ChessView extends MarkdownRenderChild {
 		const icon = getAnnotationIcon(annotation);
 		const tooltip = getAnnotationTooltip(annotation);
 		const boardEl = this.containerEl.querySelector('.cg-wrap');
-		let squareEl = boardEl.querySelector(`square.last-move:first-child`) as HTMLElement;
-		if(!squareEl) { // Edge case when there is a check
-			squareEl = boardEl.querySelector(`square.last-move:nth-child(2)`) as HTMLElement;
-		}
+		let squareEl = boardEl.querySelector(`square.last-move`) as HTMLElement;
 		const iconEl = document.createElement('img');
 
 		iconEl.className = `chess-annotation-icon`;

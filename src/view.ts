@@ -151,6 +151,9 @@ export class ChessView extends MarkdownRenderChild {
 			this.config.pieceStyle,
 			`${this.config.boardStyle}-board`, "chess-view"]
 		);
+		if(this.config.centerBoard) {
+			this.containerEl.addClass('center-board')
+		}
 	}
 
 	private setupSidebar() {

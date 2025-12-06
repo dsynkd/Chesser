@@ -10,6 +10,7 @@ export interface Settings {
 	boardStyle: string;
 	orientation: string;
 	showSidebar: boolean;
+	centerBoard: boolean;
 	showAnnotations: boolean;
 }
 
@@ -20,6 +21,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	boardStyle: "brown",
 	orientation: "white",
 	showSidebar: true,
+	centerBoard: false,
 	showAnnotations: true,
 };
 
@@ -108,6 +110,16 @@ export class ChessPluginSettingTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 				});
 			});
+
+		new Setting(containerEl)
+		.setName("Center Chessboard")
+		.setDesc("Cemter the board when the sidebar is hidden.")
+		.addToggle((toggle) => {
+			toggle.setValue(this.plugin.settings.centerBoard).onChange((centerBoard) => {
+				this.plugin.settings.centerBoard = centerBoard;
+				this.plugin.saveSettings();
+			});
+		});
 
 		containerEl.createEl('h3', { text: 'Annotations' });
 
